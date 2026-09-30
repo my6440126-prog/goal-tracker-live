@@ -1,0 +1,111 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+.app {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 20px;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+header p {
+  color: #666;
+}
+
+section {
+  background: white;
+  padding: 18px;
+  margin-bottom: 16px;
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.progress-card {
+  text-align: center;
+}
+
+.progress-number {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 15px 0;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+button {
+  border: none;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #222;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.goal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.goal:last-child {
+  border-bottom: none;
+}
+
+.goal.done span {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.streak {
+  text-align: center;
+}
+
+.streak strong {
+  font-size: 32px;
+}
+header h1,
+.progress-card h2,
+.add-goal h2,
+.goals h2,
+.streak h2 {
+  color: #222;
+}
+
+header p {
+  color: #555;
+}
+
+.progress-card p,
+.goals p,
+.streak p {
+  color: #444;
+}
