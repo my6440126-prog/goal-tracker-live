@@ -24,10 +24,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
+u        uses: android-actions/setup-android@v4
 
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
