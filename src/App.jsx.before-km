@@ -135,30 +135,19 @@ function App() {
   };
 
   const addProgress = (id) => {
-  const input = prompt("How much progress did you complete today?");
+    const nextGoals = goals.map((goal) => {
+      if (goal.id !== id) return goal;
 
-  if (input === null) return;
+      return {
+        ...goal,
+        progress: Math.min(goal.progress + 0.1, goal.target),
+      };
+    });
 
-  const amount = Number(input);
-
-  if (!amount || amount <= 0) {
-    alert("Please enter a valid amount.");
-    return;
-  }
-
-  const nextGoals = goals.map((goal) => {
-    if (goal.id !== id) return goal;
-
-    return {
-      ...goal,
-      progress: Math.min(goal.progress + amount, goal.target),
-    };
-  });
-
-  setGoals(nextGoals);
-  saveHistory(nextGoals);
-  updateStreak(nextGoals);
-};
+    setGoals(nextGoals);
+    saveHistory(nextGoals);
+    updateStreak(nextGoals);
+  };
 
   const removeProgress = (id) => {
     const nextGoals = goals.map((goal) => {
@@ -166,7 +155,7 @@ function App() {
 
       return {
         ...goal,
-        progress: Math.max(goal.progress - 1, 0),
+        progress: Math.max(goal.progress - 0.1, 0),
       };
     });
 
@@ -381,10 +370,7 @@ function App() {
                   <p>
                     📈 Today: {goal.progress} {goal.unit}
                   </p>
-<p>
-  ⏳ Remaining:{" "}
-  {Math.max(goal.target - goal.progress, 0)} {goal.unit}
-</p>
+
                   <div className="progress-bar">
                     <div
                       className="progress-fill"
