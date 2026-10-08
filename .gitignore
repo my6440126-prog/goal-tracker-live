@@ -6,3 +6,17 @@ android/app/build/
 android/build/
 *.log
 .env
+
+# Environment and secrets
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Local backup files
+*.backup
+*.before-km
+*.smartgoal-backup
+*.km-backup
