@@ -20,3 +20,4 @@ secrets.json
 *.before-km
 *.smartgoal-backup
 *.km-backup
+*.before-storage-security

@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-function App() {
-  const getToday = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+const getToday = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
-  };
+  return `${year}-${month}-${day}`;
+};
+
+function App() {
 
   const formatDate = (dateString) => {
     const date = new Date(`${dateString}T00:00:00`);
@@ -20,24 +21,80 @@ function App() {
     });
   };
 
-  const [goals, setGoals] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("smartGoals")) || [];
-    } catch {
-      return [];
-    }
-  });
+const safeReadJSON = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+const safeSave = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    console.warn(`Could not save ${key}`);
+  }
+};
+const [goals, setGoals] = useState(() => {
+  const stored = safeReadJSON("smartGoals", []);
+  if (!Array.isArray(stored)) return [];
+  return stored.filter((goal) =>
+    goal &&
+    typeof goal === "object" &&
+    !Array.isArray(goal) &&
+    (typeof goal.id === "number" || typeof goal.id === "string") &&
+    typeof goal.name === "string" &&
+    typeof goal.target === "number" &&
+    Number.isFinite(goal.target) &&
+    goal.target > 0 &&
+    typeof goal.progress === "number" &&
+    Number.isFinite(goal.progress) &&
+    goal.progress >= 0 &&
+    typeof goal.unit === "string"
+  ).map((goal) => ({
+    ...goal,
+    progress: Math.min(goal.progress, goal.target)
+  }));
+});
 
   const [goalHistory, setGoalHistory] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("smartGoalHistory")) || {};
-    } catch {
+    const stored = safeReadJSON("smartGoalHistory", {});
+
+    if (!stored || typeof stored !== "object" || Array.isArray(stored)) {
       return {};
     }
+
+    return Object.fromEntries(
+      Object.entries(stored).filter(([date, record]) =>
+        /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+        record !== null &&
+        typeof record === "object" &&
+        !Array.isArray(record) &&
+        Number.isInteger(record.total) &&
+        record.total >= 0 &&
+        Number.isInteger(record.completed) &&
+        record.completed >= 0 &&
+        record.completed <= record.total
+      ).map(([date, record]) => [
+        date,
+        {
+          total: record.total,
+          completed: record.completed
+        }
+      ])
+    );
   });
 
   const [streak, setStreak] = useState(() => {
-    return Number(localStorage.getItem("smartGoalStreak")) || 0;
+    const stored = safeReadJSON("smartGoalStreak", 0);
+
+    return Number.isSafeInteger(stored) && stored >= 0
+      ? stored
+      : 0;
   });
 
   const [goalName, setGoalName] = useState("");
@@ -45,17 +102,18 @@ function App() {
   const [unit, setUnit] = useState("times");
   const [editingId, setEditingId] = useState(null);
 
-  useEffect(() => {
-    localStorage.setItem("smartGoals", JSON.stringify(goals));
+   useEffect(() => {
+      safeSave("smartGoals", goals);
   }, [goals]);
 
-  useEffect(() => {
-    localStorage.setItem("smartGoalHistory", JSON.stringify(goalHistory));
-  }, [goalHistory]);
+useEffect(() => {
+  safeSave("smartGoalHistory", goalHistory);
+}, [goalHistory]);
 
   useEffect(() => {
-    localStorage.setItem("smartGoalStreak", String(streak));
-  }, [streak]);
+  safeSave("smartGoalStreak", streak);
+}, [streak]);
+
 
   const today = getToday();
 
@@ -239,8 +297,10 @@ function App() {
   const getLastSevenDays = () => {
     const days = [];
 
+    const today = new Date();
+
     for (let i = 0; i < 7; i++) {
-      const date = new Date();
+      const date = new Date(today);
       date.setDate(date.getDate() - i);
 
       const year = date.getFullYear();
