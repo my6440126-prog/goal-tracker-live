@@ -98,21 +98,35 @@ useEffect(() => {
   };
 
   const updateStreak = (nextGoals) => {
-    if (nextGoals.length === 0) {
-      setStreak(0);
-      return;
-    }
+if (nextGoals.length === 0) {
+setStreak(0);
+safeSave("smartGoalStreakDate", "");
+return;
+}
 
-    const allCompleted = nextGoals.every(
-      (goal) => goal.progress >= goal.target
-    );
+const allCompleted = nextGoals.every(
+  (goal) => goal.progress >= goal.target
+);
 
-    if (!allCompleted) {
-      return;
-    }
+if (!allCompleted) return;
 
-    setStreak((previous) => previous + 1);
-  };
+const lastStreakDate = safeReadJSON("smartGoalStreakDate", "");
+if (lastStreakDate === today) return;
+
+const yesterdayDate = new Date();
+yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+const yesterday = [
+  yesterdayDate.getFullYear(),
+  String(yesterdayDate.getMonth() + 1).padStart(2, "0"),
+  String(yesterdayDate.getDate()).padStart(2, "0"),
+].join("-");
+
+setStreak((previous) =>
+  lastStreakDate === yesterday ? previous + 1 : 1
+);
+safeSave("smartGoalStreakDate", today);
+
+};;
 
   const addGoal = (event) => {
     event.preventDefault();
