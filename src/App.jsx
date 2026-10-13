@@ -1,16 +1,16 @@
+import StepCounter from "./StepCounter";
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const getToday = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-};
-
 function App() {
+  const getToday = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(`${dateString}T00:00:00`);
@@ -40,62 +40,20 @@ const safeSave = (key, value) => {
   }
 };
 const [goals, setGoals] = useState(() => {
-  const stored = safeReadJSON("smartGoals", []);
-  if (!Array.isArray(stored)) return [];
-  return stored.filter((goal) =>
-    goal &&
-    typeof goal === "object" &&
-    !Array.isArray(goal) &&
-    (typeof goal.id === "number" || typeof goal.id === "string") &&
-    typeof goal.name === "string" &&
-    typeof goal.target === "number" &&
-    Number.isFinite(goal.target) &&
-    goal.target > 0 &&
-    typeof goal.progress === "number" &&
-    Number.isFinite(goal.progress) &&
-    goal.progress >= 0 &&
-    typeof goal.unit === "string"
-  ).map((goal) => ({
-    ...goal,
-    progress: Math.min(goal.progress, goal.target)
-  }));
+  return safeReadJSON("smartGoals", []);
 });
 
   const [goalHistory, setGoalHistory] = useState(() => {
-    const stored = safeReadJSON("smartGoalHistory", {});
-
-    if (!stored || typeof stored !== "object" || Array.isArray(stored)) {
-      return {};
-    }
-
-    return Object.fromEntries(
-      Object.entries(stored).filter(([date, record]) =>
-        /^\d{4}-\d{2}-\d{2}$/.test(date) &&
-        record !== null &&
-        typeof record === "object" &&
-        !Array.isArray(record) &&
-        Number.isInteger(record.total) &&
-        record.total >= 0 &&
-        Number.isInteger(record.completed) &&
-        record.completed >= 0 &&
-        record.completed <= record.total
-      ).map(([date, record]) => [
-        date,
-        {
-          total: record.total,
-          completed: record.completed
-        }
-      ])
-    );
-  });
+  const stored = safeReadJSON("smartGoalHistory", {});
+  return stored && typeof stored === "object" && !Array.isArray(stored)
+    ? stored
+    : {};
+});
 
   const [streak, setStreak] = useState(() => {
-    const stored = safeReadJSON("smartGoalStreak", 0);
-
-    return Number.isSafeInteger(stored) && stored >= 0
-      ? stored
-      : 0;
-  });
+  const stored = Number(localStorage.getItem("smartGoalStreak"));
+  return Number.isFinite(stored) && stored >= 0 ? stored : 0;
+});
 
   const [goalName, setGoalName] = useState("");
   const [target, setTarget] = useState("");
@@ -113,7 +71,6 @@ useEffect(() => {
   useEffect(() => {
   safeSave("smartGoalStreak", streak);
 }, [streak]);
-
 
   const today = getToday();
 
@@ -297,10 +254,8 @@ useEffect(() => {
   const getLastSevenDays = () => {
     const days = [];
 
-    const today = new Date();
-
     for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
+      const date = new Date();
       date.setDate(date.getDate() - i);
 
       const year = date.getFullYear();
@@ -352,6 +307,7 @@ useEffect(() => {
           ></div>
         </div>
       </section>
+<StepCounter />
 
       <section className="card">
         <h2>➕ {editingId ? "Edit Goal" : "Add Smart Goal"}</h2>
