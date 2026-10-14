@@ -21,3 +21,5 @@ secrets.json
 *.smartgoal-backup
 *.km-backup
 *.before-storage-security
+*.jks
+*.keystore
