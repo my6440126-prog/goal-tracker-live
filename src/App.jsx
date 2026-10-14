@@ -55,6 +55,26 @@ const [goals, setGoals] = useState(() => {
   return Number.isFinite(stored) && stored >= 0 ? stored : 0;
 });
 
+  const [historyView, setHistoryView] = useState("daily");
+
+  const [historyStartDate] = useState(() => {
+    const saved = safeReadJSON("goalTrackerStartDate", "");
+    if (typeof saved === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(saved)) {
+      return saved;
+    }
+
+    const date = new Date();
+    const start = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    safeSave("goalTrackerStartDate", start);
+    return start;
+  });
+
   const [goalName, setGoalName] = useState("");
   const [target, setTarget] = useState("");
   const [unit, setUnit] = useState("times");
@@ -265,31 +285,34 @@ safeSave("smartGoalStreakDate", today);
     setUnit("times");
   };
 
-  const getLastSevenDays = () => {
+  const getHistoryDays = () => {
     const days = [];
+    const count =
+      historyView === "daily" ? 1 :
+      historyView === "weekly" ? 7 : 30;
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < count; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
 
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
 
-      const key = `${year}-${month}-${day}`;
+      if (key < historyStartDate) break;
 
       days.push({
         key,
         label:
-          i === 0
-            ? "Today"
-            : i === 1
-              ? "Yesterday"
-              : date.toLocaleDateString("en-IN", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                }),
+          i === 0 ? "Today" :
+          i === 1 ? "Yesterday" :
+          date.toLocaleDateString("en-IN", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          }),
       });
     }
 
@@ -461,10 +484,18 @@ safeSave("smartGoalStreakDate", today);
       </section>
 
       <section className="card">
-        <h2>📅 7-Day History</h2>
+        <h2>📅 Activity History</h2>
+
+        <div className="history-filters">
+          <button type="button" className={historyView === "daily" ? "history-filter selected" : "history-filter"} onClick={() => setHistoryView("daily")}>Daily</button>
+          <button type="button" className={historyView === "weekly" ? "history-filter selected" : "history-filter"} onClick={() => setHistoryView("weekly")}>Weekly</button>
+          <button type="button" className={historyView === "monthly" ? "history-filter selected" : "history-filter"} onClick={() => setHistoryView("monthly")}>Monthly</button>
+        </div>
+
+        <p className="history-note">History starts from {formatDate(historyStartDate)}.</p>
 
         <div className="history-list">
-          {getLastSevenDays().map((day) => {
+          {getHistoryDays().map((day) => {
             const record = goalHistory[day.key];
 
             return (

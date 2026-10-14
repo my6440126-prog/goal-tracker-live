@@ -438,3 +438,31 @@ input:focus {
     min-width: 80px;
   }
 }
+
+/* Daily, weekly and monthly history controls */
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.history-filter {
+  padding: 8px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.history-filter.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.history-note {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
