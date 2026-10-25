@@ -466,3 +466,1046 @@ input:focus {
   font-size: 0.9rem;
   opacity: 0.8;
 }
+
+/* ===== GOAL TRACKER LIVE: DARK NEON DASHBOARD ===== */
+:root {
+  color-scheme: dark;
+  font-family: Inter, Arial, sans-serif;
+  color: #edf4ff;
+  background: #080d1b;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 10% 0%, #172b4e 0, transparent 38%),
+    radial-gradient(ellipse at 100% 30%, #102c31 0, transparent 30%),
+    #080d1b;
+  color: #edf4ff;
+}
+
+.app {
+  max-width: 600px;
+  padding: 24px 16px 48px;
+}
+
+.app-header {
+  padding: 12px 4px 22px;
+}
+
+.app-header h1 {
+  font-size: clamp(25px, 7vw, 32px);
+  color: #f4f8ff;
+  letter-spacing: -0.7px;
+}
+
+.app-header p {
+  color: #9aaac5;
+}
+
+.app section:not(.step-card) {
+  background: linear-gradient(145deg, #131d31, #101827);
+  border: 1px solid #26344b;
+  border-radius: 22px;
+  box-shadow: 0 12px 30px #00000026;
+  color: #edf4ff;
+}
+
+.app section h2 {
+  color: #f3f7ff;
+}
+
+.progress-card {
+  background:
+    radial-gradient(circle at 50% 0%, #1c4c51 0, transparent 65%),
+    linear-gradient(145deg, #132a36, #101827) !important;
+  border-color: #285b5a !important;
+}
+
+.progress-number {
+  background: linear-gradient(135deg, #44f0c0, #7c9cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.progress-card p,
+.app .card p,
+.app footer p {
+  color: #a7b6ce;
+}
+
+.progress-circle {
+  border-color: #35dfb2;
+  box-shadow: 0 0 24px #22d3a020;
+}
+
+.progress-bar {
+  background: #26354a;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #28dcb0, #92f78d);
+  border-radius: inherit;
+}
+
+.app input,
+.app select {
+  width: 100%;
+  background: #0b1323;
+  color: #edf4ff;
+  border: 1px solid #2c3b54;
+  border-radius: 13px;
+  padding: 13px 14px;
+  margin-bottom: 10px;
+}
+
+.app input:focus,
+.app select:focus {
+  border-color: #39dfbd;
+  outline: 2px solid #39dfbd22;
+}
+
+.app input::placeholder {
+  color: #8291aa;
+}
+
+.app button {
+  border-radius: 12px;
+  transition: transform .15s ease, filter .15s ease;
+}
+
+.app button:active {
+  transform: scale(.97);
+}
+
+.form-buttons button,
+.goal-buttons button,
+.history-filter {
+  padding: 11px 13px;
+  background: #1a2940;
+  color: #dce8ff;
+  border: 1px solid #30435e;
+}
+
+.form-buttons button[type="submit"] {
+  background: linear-gradient(120deg, #16b994, #3c8dff);
+  color: #06141b;
+  font-weight: 800;
+  border: 0;
+}
+
+.goal-item {
+  border: 1px solid #283950;
+  background: #0d1626;
+  padding: 15px;
+  border-radius: 17px;
+  margin-bottom: 12px;
+}
+
+.goal-item h3 {
+  color: #f1f6ff;
+}
+
+.goal-item p {
+  color: #a7b6ce;
+}
+
+.goal-actions button {
+  background: #1c2a40;
+  color: #e5efff;
+  padding: 8px 10px;
+  margin-left: 5px;
+}
+
+.goal-info div {
+  background: #111e30;
+  border-color: #293a52;
+}
+
+.goal-info small {
+  color: #9bacc5;
+}
+
+.goal-info strong {
+  color: #e9f1ff;
+}
+
+.quick-progress {
+  background: #26354a;
+}
+
+.quick-progress > div {
+  background: linear-gradient(90deg, #2adbb1, #8cf18a);
+}
+
+.history-filter.selected {
+  background: linear-gradient(120deg, #16b994, #3c8dff);
+  color: #06141b;
+  border-color: transparent;
+  font-weight: 800;
+}
+
+.history-item {
+  border-bottom-color: #29384e;
+  color: #e4edfc;
+}
+
+.history-item small,
+.history-note {
+  color: #9aabc5;
+}
+
+.empty-state {
+  color: #9aabc5;
+}
+
+.streak-number {
+  color: #54edb9;
+  text-shadow: 0 0 22px #27e6b42c;
+}
+
+.app footer {
+  color: #8fa2bd;
+  text-align: center;
+  padding-top: 10px;
+}
+
+@media (max-width: 380px) {
+  .app {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .app section:not(.step-card) {
+    padding: 16px;
+  }
+}
+
+
+/* Dashboard and Music navigation */
+.screen-nav {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+
+.screen-tab {
+  flex: 1;
+  padding: 12px 10px;
+  border: 1px solid #30435e;
+  border-radius: 12px;
+  background: #1a2940;
+  color: #e9f1ff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.screen-tab.active {
+  border-color: #54edb9;
+  background: linear-gradient(120deg, #16b994, #3c8dff);
+  color: #06141b;
+}
+
+.music-screen {
+  margin: 0 0 20px;
+}
+
+/* ===== PREMIUM DARK PURPLE NEON THEME ===== */
+
+:root {
+  color-scheme: dark;
+  --premium-bg: #080b16;
+  --premium-panel: #111629;
+  --premium-panel-soft: #171a32;
+  --premium-border: #30294b;
+  --premium-text: #f5f3ff;
+  --premium-muted: #a9a4c3;
+  --premium-purple: #a78bfa;
+  --premium-pink: #e879f9;
+  --premium-gradient: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 8% 0%, #35205b66, transparent 38%),
+    radial-gradient(ellipse at 100% 18%, #252a6260, transparent 32%),
+    var(--premium-bg);
+  color: var(--premium-text);
+}
+
+.app-header h1 {
+  background: linear-gradient(110deg, #ffffff, #c4b5fd 60%, #f0abfc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.app section:not(.step-card) {
+  background: linear-gradient(145deg, #171a30, #0f1425) !important;
+  border: 1px solid var(--premium-border);
+  border-radius: 22px;
+  box-shadow: 0 14px 35px #00000030;
+  color: var(--premium-text);
+}
+
+.app section h2,
+.app section h3 {
+  color: #f5f3ff;
+}
+
+.app input,
+.app select,
+.app textarea {
+  box-sizing: border-box;
+  background: #0b1020;
+  border: 1px solid #393252;
+  border-radius: 13px;
+  color: #f5f3ff;
+}
+
+.app input:focus,
+.app select:focus,
+.app textarea:focus {
+  border-color: var(--premium-purple);
+  outline: 2px solid #a78bfa24;
+}
+
+.app input::placeholder,
+.app textarea::placeholder {
+  color: #817b9f;
+}
+
+.app button {
+  transition:
+    transform 0.16s ease,
+    filter 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.app button:active {
+  transform: scale(0.97);
+}
+
+.form-buttons button,
+.goal-buttons button,
+.history-filter,
+.screen-tab {
+  background: #1b1a33;
+  color: #e9e4ff;
+  border: 1px solid #393252;
+  border-radius: 12px;
+}
+
+.form-buttons button[type="submit"],
+.screen-tab.active,
+.history-filter.selected {
+  background: var(--premium-gradient);
+  border-color: transparent;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 7px 20px #7c3aed30;
+}
+
+.goal-item,
+.goal {
+  background: linear-gradient(145deg, #151a2d, #101526);
+  border: 1px solid #302b49;
+  border-radius: 18px;
+  color: var(--premium-text);
+}
+
+.goal h3,
+.goal-item h3,
+.goal-content > span:first-child {
+  color: #f5f3ff;
+}
+
+.goal p,
+.goal-item p {
+  color: var(--premium-muted);
+}
+
+.goal-info div {
+  background: #0d1223;
+  border: 1px solid #302b49;
+  border-radius: 12px;
+}
+
+.goal-info small {
+  color: #a9a4c3;
+}
+
+.goal-info strong {
+  color: #f5f3ff;
+}
+
+.goal-progress-text {
+  color: #c4b5fd;
+}
+
+.quick-progress {
+  background: #292641;
+}
+
+.quick-progress > div {
+  background: linear-gradient(90deg, #8b5cf6, #d946ef);
+}
+
+.goal-value-control button:first-child {
+  background: #292044;
+  color: #d8b4fe;
+}
+
+.goal-value-control button:last-child {
+  background: #12352f;
+  color: #6ee7b7;
+}
+
+.goal-value-control input {
+  background: #0b1020;
+  color: #ffffff;
+}
+
+.goal-actions button:first-child {
+  background: var(--premium-gradient);
+  color: #ffffff;
+}
+
+.goal-actions button:nth-child(2) {
+  background: #282044;
+  color: #d8b4fe;
+}
+
+.goal-actions button:nth-child(3) {
+  background: #3a1d31;
+  color: #fda4af;
+}
+
+.streak {
+  background: linear-gradient(145deg, #241b35, #111629) !important;
+  border-color: #5b376c !important;
+}
+
+.streak strong,
+.streak-number {
+  color: #e879f9;
+  text-shadow: 0 0 22px #d946ef30;
+}
+
+.history > div {
+  border-bottom-color: #302b49 !important;
+}
+
+.history strong,
+.history-item {
+  color: #eeeaff;
+}
+
+.history p,
+.history-note,
+.history-item small {
+  color: var(--premium-muted);
+}
+
+.history-goal {
+  background: #0d1223;
+  border-color: #302b49;
+  color: #e9e4ff;
+}
+
+.screen-nav {
+  gap: 10px;
+}
+
+.screen-tab {
+  min-height: 46px;
+  font-weight: 750;
+}
+
+.app footer {
+  color: #9690b1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app button,
+  .app input,
+  .app select {
+    transition: none;
+  }
+}
+
+/* ===== END PREMIUM DARK PURPLE NEON THEME ===== */
+
+/* ===== REFERENCE-INSPIRED PREMIUM DASHBOARD ===== */
+
+.app {
+  width: 100%;
+  max-width: 600px;
+  margin-inline: auto;
+  padding: 22px 15px 40px;
+}
+
+.app-header {
+  position: relative;
+  padding: 16px 8px 20px;
+}
+
+.app-header h1 {
+  font-size: clamp(27px, 7vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -0.9px;
+  filter: drop-shadow(0 0 16px #a855f755);
+}
+
+.app-header p {
+  margin-top: 9px;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.screen-nav {
+  position: sticky;
+  top: 6px;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 7px;
+  margin: 8px 0 20px;
+  border: 1px solid #37305b;
+  border-radius: 18px;
+  background: #0b0d20ee;
+  box-shadow: 0 12px 30px #00000035;
+  backdrop-filter: blur(16px);
+}
+
+.screen-tab {
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 5px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  border-radius: 12px;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.screen-tab.active {
+  background: linear-gradient(120deg, #8b5cf6, #6d5dfc 55%, #c026d3);
+  color: #fff;
+  border-color: #b69cff;
+  box-shadow: 0 0 20px #8b5cf655;
+}
+
+.app section:not(.step-card) {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 1px solid #332c56;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at top right, #6533a522, transparent 52%),
+    linear-gradient(145deg, #17172f, #0c1224 78%) !important;
+  box-shadow:
+    0 14px 34px #0000002e,
+    inset 0 1px 0 #ffffff08;
+}
+
+.app section h2 {
+  margin-top: 0;
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: -0.25px;
+}
+
+.progress-card {
+  text-align: center;
+  border-color: #3d3974 !important;
+  background:
+    radial-gradient(circle at 50% 30%, #37308066, transparent 55%),
+    linear-gradient(145deg, #171b3b, #101326) !important;
+}
+
+.progress-card h2 {
+  text-align: left;
+}
+
+.progress-circle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 146px;
+  height: 146px;
+  margin: 20px auto;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #12152b 58%, transparent 60%),
+    conic-gradient(from -90deg, #bd5cff, #706bff, #35d8ff, #bd5cff 0%);
+  box-shadow:
+    0 0 0 1px #9b8cff55,
+    0 0 28px #8b5cf633,
+    inset 0 0 20px #9d7aff22;
+}
+
+.progress-circle::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid #ffffff12;
+  border-radius: 50%;
+}
+
+.progress-circle strong {
+  position: relative;
+  font-size: 32px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 18px #a78bfa70;
+}
+
+.progress-card > p {
+  font-size: 13px;
+  margin: 8px 0 13px;
+}
+
+.progress-bar {
+  height: 9px;
+  overflow: hidden;
+  border: 1px solid #38325b;
+  border-radius: 99px;
+  background: #0a1022;
+}
+
+.progress-fill {
+  min-height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b5cf6, #d946ef, #53c8ff);
+  box-shadow: 0 0 14px #a855f766;
+  transition: width 0.35s ease;
+}
+
+.app input,
+.app select,
+.app textarea {
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  margin: 0 0 11px;
+  border: 1px solid #393454;
+  border-radius: 13px;
+  background: #090f20;
+  color: #f5f3ff;
+  font-size: 14px;
+}
+
+.app input:focus,
+.app select:focus,
+.app textarea:focus {
+  border-color: #a78bfa;
+  outline: 3px solid #8b5cf625;
+  box-shadow: 0 0 16px #8b5cf61c;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+.form-buttons button,
+.goal-buttons button {
+  min-height: 42px;
+  padding: 11px 14px;
+  border: 1px solid #453968;
+  border-radius: 12px;
+  background: #201a3b;
+  color: #f0eaff;
+  font-weight: 800;
+}
+
+.form-buttons button[type="submit"] {
+  flex: 1;
+  background: linear-gradient(115deg, #8b5cf6, #6558ee, #c026d3);
+  color: #fff;
+  border: 0;
+  box-shadow: 0 7px 20px #8b5cf633;
+}
+
+.goal-list {
+  display: grid;
+  gap: 12px;
+}
+
+.goal-item {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #383052;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #19172f, #101426);
+  box-shadow: inset 0 1px 0 #ffffff08;
+}
+
+.goal-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.goal-top h3 {
+  min-width: 0;
+  margin: 3px 0 12px;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.goal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.goal-actions button {
+  min-width: 38px;
+  min-height: 36px;
+  margin: 0;
+  padding: 7px;
+  border: 1px solid #393151;
+  border-radius: 10px;
+  background: #26203f;
+  color: #e9d5ff;
+}
+
+.goal-item > p {
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.goal-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.goal-buttons button {
+  flex: 1;
+  min-width: 110px;
+}
+
+.goal-buttons button:last-child {
+  background: linear-gradient(120deg, #8b5cf6, #6558ee);
+  border-color: transparent;
+  color: #fff;
+}
+
+.goal-buttons button:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.streak-card {
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, #a21caf22, transparent 65%),
+    linear-gradient(145deg, #20152f, #111426) !important;
+  border-color: #5b326e !important;
+}
+
+.streak-number {
+  margin: 8px 0;
+  font-size: clamp(34px, 9vw, 44px);
+  font-weight: 900;
+  background: linear-gradient(120deg, #f0abfc, #a78bfa, #67e8f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.history-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.history-filter {
+  min-height: 40px;
+  padding: 9px 6px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.history-list {
+  display: grid;
+  gap: 9px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid #302b4b;
+  border-radius: 13px;
+  background: #0c1122;
+}
+
+.history-item > div {
+  display: grid;
+  gap: 4px;
+}
+
+.history-item strong {
+  font-size: 13px;
+}
+
+.history-item small,
+.history-item > span {
+  font-size: 11px;
+  color: #b3abc9;
+}
+
+.empty-state {
+  padding: 18px 10px;
+  text-align: center;
+  line-height: 1.8;
+  color: #b8afd4;
+}
+
+@media (max-width: 380px) {
+  .app {
+    padding: 16px 11px 32px;
+  }
+
+  .app section:not(.step-card) {
+    padding: 16px;
+    border-radius: 19px;
+  }
+
+  .screen-nav {
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .screen-tab {
+    font-size: 11px;
+  }
+
+  .progress-circle {
+    width: 128px;
+    height: 128px;
+  }
+
+  .goal-item {
+    padding: 13px;
+  }
+}
+
+/* ===== END PREMIUM DASHBOARD DESIGN ===== */
+
+/* ===== DASHBOARD SPACING POLISH - OCT 2026 ===== */
+
+.app {
+  width: min(100%, 680px);
+  margin-inline: auto;
+  padding: 20px 15px 36px;
+}
+
+.app-header {
+  margin-bottom: 20px;
+}
+
+.app-header h1 {
+  letter-spacing: -0.6px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.app-header p {
+  margin-top: 7px;
+  line-height: 1.6;
+}
+
+.screen-nav {
+  position: sticky;
+  top: 8px;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0 0 18px;
+  padding: 7px;
+  border: 1px solid #393052;
+  border-radius: 17px;
+  background: rgba(13, 13, 31, 0.94);
+  box-shadow: 0 8px 24px #00000030;
+  backdrop-filter: blur(14px);
+}
+
+.screen-tab {
+  min-width: 0;
+  min-height: 43px;
+  padding: 9px 5px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.screen-tab.active {
+  border-color: #8060d9;
+  background: linear-gradient(130deg, #7045c7, #4d3cb0);
+  color: #fff;
+  box-shadow: 0 4px 14px #7c3aed35;
+}
+
+.app section.card,
+.app section.step-card,
+.app section.exercise-card {
+  margin-bottom: 16px;
+  scroll-margin-top: 80px;
+}
+
+.progress-card {
+  padding: 20px 17px;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #8b5cf626, transparent 68%),
+    linear-gradient(145deg, #1b1935, #101426);
+  border: 1px solid #40345f;
+  box-shadow: 0 12px 28px #00000020, inset 0 1px 0 #ffffff0a;
+}
+
+.progress-card h2 {
+  margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.progress-card > p {
+  margin: 12px 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.progress-bar {
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.progress-fill {
+  border-radius: inherit;
+  transition: width 300ms ease;
+}
+
+.app section.card {
+  border-radius: 21px;
+  box-shadow: 0 10px 26px #0000001c, inset 0 1px 0 #ffffff06;
+}
+
+.app section.card h2 {
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.app form {
+  display: grid;
+  gap: 9px;
+}
+
+.app form input,
+.app form select {
+  width: 100%;
+  min-width: 0;
+}
+
+.form-buttons button,
+.goal-buttons button,
+.goal-actions button,
+.screen-tab {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.form-buttons button:active,
+.goal-buttons button:active,
+.goal-actions button:active,
+.screen-tab:active {
+  transform: scale(0.98);
+}
+
+.goal-list,
+.history-list {
+  gap: 10px;
+}
+
+.goal-item,
+.history-item {
+  overflow-wrap: anywhere;
+}
+
+.empty-state {
+  border: 1px dashed #41365e;
+  border-radius: 15px;
+  background: #0b10201f;
+}
+
+.history-filters {
+  margin-bottom: 13px;
+}
+
+@media (max-width: 380px) {
+  .app {
+    padding: 15px 11px 28px;
+  }
+
+  .screen-nav {
+    top: 5px;
+    gap: 5px;
+    padding: 5px;
+  }
+
+  .screen-tab {
+    min-height: 41px;
+    padding: 8px 3px;
+    font-size: 11px;
+  }
+
+  .progress-card {
+    padding: 17px 13px;
+  }
+
+  .app section.card,
+  .app section.step-card,
+  .app section.exercise-card {
+    margin-bottom: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-tab,
+  .progress-fill {
+    transition: none !important;
+  }
+
+  .form-buttons button,
+  .goal-buttons button,
+  .goal-actions button {
+    transform: none !important;
+  }
+}
+
+/* ===== END DASHBOARD SPACING POLISH ===== */

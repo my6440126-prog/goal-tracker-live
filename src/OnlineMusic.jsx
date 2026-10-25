@@ -1,0 +1,112 @@
+import { useState } from "react";
+import "./OnlineMusic.css";
+
+const API = "https://commons.wikimedia.org/w/api.php";
+
+export default function OnlineMusic({ onAddTrack }) {
+  const [query, setQuery] = useState("relaxing instrumental music");
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function searchMusic(event) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    setTracks([]);
+
+    try {
+      const params = new URLSearchParams({
+        action: "query",
+        generator: "search",
+        gsrsearch: `${query} filemime:audio`,
+        gsrnamespace: "6",
+        gsrlimit: "20",
+        prop: "imageinfo",
+        iiprop: "url|extmetadata",
+        format: "json",
+        origin: "*",
+      });
+
+      const response = await fetch(`${API}?${params}`);
+      if (!response.ok) throw new Error("Search failed");
+
+      const data = await response.json();
+      const pages = Object.values(data.query?.pages || {});
+
+      const results = pages
+        .filter(page => {
+          const info = page.imageinfo?.[0];
+          const license = info?.extmetadata?.LicenseShortName?.value || "";
+          const url = info?.url || "";
+
+          return (
+            /\.(mp3|ogg|oga|wav|flac)(\?|$)/i.test(url) &&
+            /CC0|CC BY|CC BY-SA|Public domain/i.test(license)
+          );
+        })
+        .map(page => ({
+          id: page.pageid,
+          title: page.title.replace(/^File:/, ""),
+          url: page.imageinfo[0].url,
+          license:
+            page.imageinfo[0].extmetadata?.LicenseShortName?.value ||
+            "लाइसेंस जाँचें",
+          pageUrl: `https://commons.wikimedia.org/wiki/${encodeURIComponent(
+            page.title.replace(/ /g, "_")
+          )}`,
+        }));
+
+      setTracks(results);
+      if (!results.length) {
+        setError("कोई समर्थित मुफ्त ऑडियो नहीं मिला। दूसरा शब्द खोजें।");
+      }
+    } catch {
+      setError("ऑनलाइन संगीत खोज नहीं हो सकी। इंटरनेट कनेक्शन जाँचें।");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="online-music">
+      <h2>🌐 Free Online Music</h2>
+      <p>गाना चुनें और उसे मुख्य Music Player में चलाएँ।</p>
+
+      <form className="online-search" onSubmit={searchMusic}>
+        <input
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+          placeholder="Music खोजें"
+          aria-label="संगीत खोजें"
+        />
+        <button type="submit" disabled={loading || !query.trim()}>
+          {loading ? "खोज रहे हैं..." : "खोजें"}
+        </button>
+      </form>
+
+      {error && <p className="online-message">{error}</p>}
+
+      <div className="online-track-list">
+        {tracks.map(track => (
+          <article className="online-track" key={track.id}>
+            <p className="online-track-name">🎵 {track.title}</p>
+            <button type="button" onClick={() => onAddTrack(track)}>
+              ▶ मुख्य Player में चलाएँ
+            </button>
+            <p>लाइसेंस: {track.license}</p>
+            <a href={track.pageUrl} target="_blank" rel="noreferrer">
+              स्रोत और लाइसेंस देखें
+            </a>
+          </article>
+        ))}
+      </div>
+
+      {!error && tracks.length === 0 && (
+        <p className="online-note">
+          ऑनलाइन संगीत खोजने के लिए इंटरनेट आवश्यक है।
+        </p>
+      )}
+    </section>
+  );
+}

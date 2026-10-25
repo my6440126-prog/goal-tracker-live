@@ -1,0 +1,532 @@
+import ExerciseTimer from "./ExerciseTimer";
+import MusicZone from "./MusicZone";
+import StepCounter from "./StepCounter";
+import { useEffect, useState } from "react";
+import "./App.css";
+
+function App() {
+  const getToday = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(`${dateString}T00:00:00`);
+
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+    });
+  };
+
+const safeReadJSON = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+const safeSave = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    console.warn(`Could not save ${key}`);
+  }
+};
+const [goals, setGoals] = useState(() => {
+  return safeReadJSON("smartGoals", []);
+});
+
+  const [goalHistory, setGoalHistory] = useState(() => {
+  const stored = safeReadJSON("smartGoalHistory", {});
+  return stored && typeof stored === "object" && !Array.isArray(stored)
+    ? stored
+    : {};
+});
+
+  const [streak, setStreak] = useState(() => {
+  const stored = Number(localStorage.getItem("smartGoalStreak"));
+  return Number.isFinite(stored) && stored >= 0 ? stored : 0;
+});
+
+  const [historyView, setHistoryView] = useState("daily");
+
+  const [historyStartDate] = useState(() => {
+    const saved = safeReadJSON("goalTrackerStartDate", "");
+    if (typeof saved === "string" &&
+        /^\d{4}-\d{2}-\d{2}$/.test(saved)) {
+      return saved;
+    }
+
+    const date = new Date();
+    const start = [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    safeSave("goalTrackerStartDate", start);
+    return start;
+  });
+
+  const [goalName, setGoalName] = useState("");
+  const [target, setTarget] = useState("");
+  const [unit, setUnit] = useState("times");
+  const [editingId, setEditingId] = useState(null);
+
+   useEffect(() => {
+      safeSave("smartGoals", goals);
+  }, [goals]);
+
+useEffect(() => {
+  safeSave("smartGoalHistory", goalHistory);
+}, [goalHistory]);
+
+  useEffect(() => {
+  safeSave("smartGoalStreak", streak);
+}, [streak]);
+
+  const today = getToday();
+
+  const totalCompleted = goals.filter(
+    (goal) => goal.progress >= goal.target
+  ).length;
+
+  const completionPercent =
+    goals.length === 0
+      ? 0
+      : Math.round((totalCompleted / goals.length) * 100);
+
+  const saveHistory = (nextGoals) => {
+    const completed = nextGoals.filter(
+      (goal) => goal.progress >= goal.target
+    ).length;
+
+    setGoalHistory((previous) => ({
+      ...previous,
+      [today]: {
+        total: nextGoals.length,
+        completed,
+      },
+    }));
+  };
+
+  const updateStreak = (nextGoals) => {
+if (nextGoals.length === 0) {
+setStreak(0);
+safeSave("smartGoalStreakDate", "");
+return;
+}
+
+const allCompleted = nextGoals.every(
+  (goal) => goal.progress >= goal.target
+);
+
+if (!allCompleted) return;
+
+const lastStreakDate = safeReadJSON("smartGoalStreakDate", "");
+if (lastStreakDate === today) return;
+
+const yesterdayDate = new Date();
+yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+const yesterday = [
+  yesterdayDate.getFullYear(),
+  String(yesterdayDate.getMonth() + 1).padStart(2, "0"),
+  String(yesterdayDate.getDate()).padStart(2, "0"),
+].join("-");
+
+setStreak((previous) =>
+  lastStreakDate === yesterday ? previous + 1 : 1
+);
+safeSave("smartGoalStreakDate", today);
+
+};;
+
+  const addGoal = (event) => {
+    event.preventDefault();
+
+    const cleanName = goalName.trim();
+    const numericTarget = Number(target);
+
+    if (!cleanName) {
+      alert("Please enter a goal name.");
+      return;
+    }
+
+    if (!numericTarget || numericTarget <= 0) {
+      alert("Please enter a valid target.");
+      return;
+    }
+
+    const newGoal = {
+      id: Date.now(),
+      name: cleanName,
+      target: numericTarget,
+      unit,
+      progress: 0,
+      createdAt: today,
+    };
+
+    const nextGoals = [...goals, newGoal];
+
+    setGoals(nextGoals);
+    saveHistory(nextGoals);
+
+    setGoalName("");
+    setTarget("");
+    setUnit("times");
+  };
+
+  const addProgress = (id) => {
+  const input = prompt("How much progress did you complete today?");
+
+  if (input === null) return;
+
+  const amount = Number(input);
+
+  if (!amount || amount <= 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+
+  const nextGoals = goals.map((goal) => {
+    if (goal.id !== id) return goal;
+
+    return {
+      ...goal,
+      progress: Math.min(goal.progress + amount, goal.target),
+    };
+  });
+
+  setGoals(nextGoals);
+  saveHistory(nextGoals);
+  updateStreak(nextGoals);
+};
+
+  const removeProgress = (id) => {
+    const nextGoals = goals.map((goal) => {
+      if (goal.id !== id) return goal;
+
+      return {
+        ...goal,
+        progress: Math.max(goal.progress - 1, 0),
+      };
+    });
+
+    setGoals(nextGoals);
+    saveHistory(nextGoals);
+  };
+
+  const deleteGoal = (id) => {
+    const nextGoals = goals.filter((goal) => goal.id !== id);
+
+    setGoals(nextGoals);
+    saveHistory(nextGoals);
+
+    if (nextGoals.length === 0) {
+      setStreak(0);
+    }
+  };
+
+  const startEdit = (goal) => {
+    setEditingId(goal.id);
+    setGoalName(goal.name);
+    setTarget(String(goal.target));
+    setUnit(goal.unit);
+  };
+
+  const saveEdit = (event) => {
+    event.preventDefault();
+
+    const cleanName = goalName.trim();
+    const numericTarget = Number(target);
+
+    if (!cleanName) {
+      alert("Please enter a goal name.");
+      return;
+    }
+
+    if (!numericTarget || numericTarget <= 0) {
+      alert("Please enter a valid target.");
+      return;
+    }
+
+    const nextGoals = goals.map((goal) => {
+      if (goal.id !== editingId) return goal;
+
+      return {
+        ...goal,
+        name: cleanName,
+        target: numericTarget,
+        unit,
+        progress: Math.min(goal.progress, numericTarget),
+      };
+    });
+
+    setGoals(nextGoals);
+    saveHistory(nextGoals);
+
+    setEditingId(null);
+    setGoalName("");
+    setTarget("");
+    setUnit("times");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setGoalName("");
+    setTarget("");
+    setUnit("times");
+  };
+
+  const getHistoryDays = () => {
+    const days = [];
+    const count =
+      historyView === "daily" ? 1 :
+      historyView === "weekly" ? 7 : 30;
+
+    for (let i = 0; i < count; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+
+      if (key < historyStartDate) break;
+
+      days.push({
+        key,
+        label:
+          i === 0 ? "Today" :
+          i === 1 ? "Yesterday" :
+          date.toLocaleDateString("en-IN", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+          }),
+      });
+    }
+
+    return days;
+  };
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>🎯 Goal Tracker Live</h1>
+        <p>Track your goals. Build your future.</p>
+      </header>
+
+      <section className="card progress-card">
+        <h2>📊 Today's Progress</h2>
+
+        <div className="progress-circle">
+          <strong>{completionPercent}%</strong>
+        </div>
+
+        <p>
+          {totalCompleted} of {goals.length} goals completed
+        </p>
+
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{ width: `${completionPercent}%` }}
+          ></div>
+        </div>
+      </section>
+<StepCounter />
+      <ExerciseTimer />
+      <MusicZone />
+
+      <section className="card">
+        <h2>➕ {editingId ? "Edit Goal" : "Add Smart Goal"}</h2>
+
+        <form onSubmit={editingId ? saveEdit : addGoal}>
+          <input
+            type="text"
+            placeholder="Goal name (e.g. Running)"
+            value={goalName}
+            onChange={(event) => setGoalName(event.target.value)}
+            maxLength={80}
+          />
+
+          <input
+            type="number"
+            placeholder="Target (e.g. 5)"
+            value={target}
+            onChange={(event) => setTarget(event.target.value)}
+            min="0"
+            step="0.01"
+          />
+
+          <select
+            value={unit}
+            onChange={(event) => setUnit(event.target.value)}
+          >
+            <option value="times">times</option>
+            <option value="km">km</option>
+            <option value="hours">hours</option>
+            <option value="minutes">minutes</option>
+            <option value="pages">pages</option>
+            <option value="₹">₹</option>
+            <option value="points">points</option>
+          </select>
+
+          <div className="form-buttons">
+            <button type="submit">
+              {editingId ? "💾 Save Changes" : "🚀 Add Goal"}
+            </button>
+
+            {editingId && (
+              <button type="button" onClick={cancelEdit}>
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      </section>
+
+      <section className="card">
+        <h2>🎯 My Goals</h2>
+
+        {goals.length === 0 ? (
+          <p className="empty-state">
+            No goals yet. Add your first goal above 🚀
+          </p>
+        ) : (
+          <div className="goal-list">
+            {goals.map((goal) => {
+              const percentage = Math.min(
+                Math.round((goal.progress / goal.target) * 100),
+                100
+              );
+
+              const completed = goal.progress >= goal.target;
+
+              return (
+                <div className="goal-item" key={goal.id}>
+                  <div className="goal-top">
+                    <h3>
+                      {completed ? "✅" : "🎯"} {goal.name}
+                    </h3>
+
+                    <div className="goal-actions">
+                      <button onClick={() => startEdit(goal)}>✏️</button>
+
+                      <button onClick={() => deleteGoal(goal.id)}>
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+
+                  <p>
+                    🎯 Target: {goal.target} {goal.unit}
+                  </p>
+
+                  <p>
+                    📈 Today: {goal.progress} {goal.unit}
+                  </p>
+<p>
+  ⏳ Remaining:{" "}
+  {Math.max(goal.target - goal.progress, 0)} {goal.unit}
+</p>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+
+                  <p>
+                    {percentage}% complete
+                  </p>
+
+                  <div className="goal-buttons">
+                    <button
+                      onClick={() => removeProgress(goal.id)}
+                      disabled={goal.progress <= 0}
+                    >
+                      ↩️ Undo
+                    </button>
+
+                    <button
+                      onClick={() => addProgress(goal.id)}
+                      disabled={completed}
+                    >
+                      ➕ Add Progress
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="card streak-card">
+        <h2>🔥 Current Streak</h2>
+
+        <div className="streak-number">{streak} Days</div>
+
+        <p>
+          {streak > 0
+            ? "Great! Keep your streak going! 🔥"
+            : "Complete all your goals to start your streak."}
+        </p>
+      </section>
+
+      <section className="card">
+        <h2>📅 Activity History</h2>
+
+        <div className="history-filters">
+          <button type="button" className={historyView === "daily" ? "history-filter selected" : "history-filter"} onClick={() => setHistoryView("daily")}>Daily</button>
+          <button type="button" className={historyView === "weekly" ? "history-filter selected" : "history-filter"} onClick={() => setHistoryView("weekly")}>Weekly</button>
+          <button type="button" className={historyView === "monthly" ? "history-filter selected" : "history-filter"} onClick={() => setHistoryView("monthly")}>Monthly</button>
+        </div>
+
+        <p className="history-note">History starts from {formatDate(historyStartDate)}.</p>
+
+        <div className="history-list">
+          {getHistoryDays().map((day) => {
+            const record = goalHistory[day.key];
+
+            return (
+              <div className="history-item" key={day.key}>
+                <div>
+                  <strong>{day.label}</strong>
+                  <small>{formatDate(day.key)}</small>
+                </div>
+
+                {record ? (
+                  <span>
+                    {record.completed}/{record.total} completed
+                  </span>
+                ) : (
+                  <span>No activity recorded</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <footer>
+        <p>🎯 Small progress every day creates a better future.</p>
+      </footer>
+    </div>
+  );
+}
+
+export default App;

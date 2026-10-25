@@ -1,0 +1,468 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: Inter, Arial, sans-serif;
+  color: #172033;
+  background: #f5f7fb;
+  font-synthesis: none;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at top left, #e8f0ff 0, transparent 35%),
+    #f5f7fb;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+.app {
+  width: 100%;
+  max-width: 560px;
+  min-height: 100vh;
+  margin: auto;
+  padding: 22px 16px 45px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+  padding: 8px 4px 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 850;
+  letter-spacing: -0.8px;
+}
+
+header p {
+  margin: 7px 0 0;
+  color: #687386;
+  font-size: 15px;
+}
+
+/* =========================
+   COMMON CARD
+========================= */
+
+section {
+  background: rgba(255, 255, 255, 0.96);
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 22px;
+  box-shadow: 0 8px 30px rgba(31, 41, 55, 0.07);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+section h2 {
+  margin-top: 0;
+  color: #172033;
+  font-size: 19px;
+}
+
+/* =========================
+   TODAY PROGRESS
+========================= */
+
+.progress-card {
+  text-align: center;
+  overflow: hidden;
+}
+
+.progress-card h2 {
+  margin-bottom: 5px;
+}
+
+.progress-number {
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 850;
+  margin: 18px 0 10px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.progress-card p,
+.goals p,
+.streak p {
+  color: #687386;
+}
+
+/* =========================
+   ADD SMART GOAL
+========================= */
+
+.add-goal h2 {
+  margin-bottom: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid #dce2ea;
+  border-radius: 13px;
+  font-size: 16px;
+  background: #f9fafb;
+  color: #172033;
+  outline: none;
+  margin-bottom: 10px;
+  transition:
+    border 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+input:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.add-goal button {
+  width: 100%;
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  padding: 14px;
+  border-radius: 13px;
+  font-weight: 750;
+  color: white;
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.22);
+}
+
+.add-goal button:hover {
+  opacity: 0.94;
+}
+
+/* =========================
+   GOALS
+========================= */
+
+.goals h2 {
+  margin-bottom: 12px;
+}
+
+.goal {
+  display: block;
+  padding: 17px 0;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.goal:last-child {
+  border-bottom: none;
+}
+
+.goal-content {
+  width: 100%;
+}
+
+.goal-content > span:first-child {
+  display: block;
+  font-size: 17px;
+  font-weight: 750;
+  color: #172033;
+  margin-bottom: 9px;
+  word-break: break-word;
+}
+
+.goal.done .goal-content > span:first-child {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* Target / Today / Remaining */
+
+.goal-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.goal-info div {
+  background: #f8fafc;
+  border: 1px solid #edf0f4;
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.goal-info small {
+  display: block;
+  color: #7a8494;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.goal-info strong {
+  display: block;
+  color: #172033;
+  font-size: 14px;
+}
+
+/* Progress text */
+
+.goal-progress-text {
+  font-size: 14px;
+  font-weight: 750;
+  margin: 8px 0;
+  color: #4338ca;
+}
+
+/* Progress bar */
+
+.quick-progress {
+  width: 100%;
+  height: 10px;
+  background: #edf0f7;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 8px 0 13px;
+}
+
+.quick-progress > div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  transition: width 0.3s ease;
+}
+
+/* =========================
+   +/- CONTROLS
+========================= */
+
+.goal-value-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: 13px 0;
+}
+
+.goal-value-control button {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.goal-value-control button:first-child {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.goal-value-control button:last-child {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.goal-value-control input {
+  width: 90px;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  font-weight: 750;
+  background: #ffffff;
+}
+
+/* =========================
+   GOAL ACTIONS
+========================= */
+
+.goal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.goal-actions button {
+  flex: 1;
+  min-width: 85px;
+  padding: 10px 9px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.goal-actions button:first-child {
+  background: #172033;
+  color: white;
+}
+
+.goal-actions button:nth-child(2) {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.goal-actions button:nth-child(3) {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.goal-actions button:hover {
+  opacity: 0.9;
+}
+
+/* =========================
+   STREAK
+========================= */
+
+.streak {
+  text-align: center;
+  background:
+    linear-gradient(135deg, #fff7ed, #ffffff);
+}
+
+.streak h2 {
+  margin-bottom: 8px;
+}
+
+.streak strong {
+  display: block;
+  font-size: 40px;
+  font-weight: 850;
+  color: #ea580c;
+}
+
+.streak p {
+  margin-bottom: 0;
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+.history h2 {
+  margin-bottom: 8px;
+}
+
+.history > div {
+  padding: 15px 0 !important;
+  border-bottom: 1px solid #edf0f4 !important;
+}
+
+.history > div:last-child {
+  border-bottom: none !important;
+}
+
+.history strong {
+  color: #172033;
+  font-size: 15px;
+}
+
+.history p {
+  margin: 6px 0 9px;
+  color: #687386;
+  font-size: 14px;
+}
+
+.history-goal {
+  background: #f8fafc;
+  border: 1px solid #edf0f4;
+  padding: 10px 12px !important;
+  margin-top: 8px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+
+.goals:empty::after {
+  content: "No goals yet. Add your first smart goal 🚀";
+  display: block;
+  text-align: center;
+  color: #7a8494;
+  padding: 20px 0 5px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 420px) {
+  .app {
+    padding: 18px 12px 35px;
+  }
+
+  section {
+    padding: 17px;
+    border-radius: 18px;
+  }
+
+  header h1 {
+    font-size: 26px;
+  }
+
+  .progress-number {
+    font-size: 48px;
+  }
+
+  .goal-info {
+    gap: 6px;
+  }
+
+  .goal-info div {
+    padding: 9px 5px;
+  }
+
+  .goal-value-control button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .goal-actions button {
+    min-width: 80px;
+  }
+}
+
+/* Daily, weekly and monthly history controls */
+.history-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.history-filter {
+  padding: 8px 14px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.history-filter.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.history-note {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}

@@ -1,4 +1,9 @@
+import ExerciseTimer from "./ExerciseTimer";
+import MusicZone from "./MusicZone";
+import Profile from "./Profile";
 import StepCounter from "./StepCounter";
+import AuthPanel from "./auth/AuthPanel";
+import { supabase } from "./lib/supabase";
 import { useEffect, useState } from "react";
 import "./App.css";
 
@@ -56,6 +61,50 @@ const [goals, setGoals] = useState(() => {
 });
 
   const [historyView, setHistoryView] = useState("daily");
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  const [authSession, setAuthSession] = useState(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!mounted) return;
+      if (error) console.error("Session जाँच नहीं हो सकी:", error.message);
+      setAuthSession(data?.session ?? null);
+      setAuthReady(true);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (mounted) {
+          setAuthSession(session ?? null);
+          setAuthReady(true);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  async function handleAuthLogin() {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    setAuthSession(data.session ?? null);
+  }
+
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Logout नहीं हो सका:", error.message);
+      return;
+    }
+    setAuthSession(null);
+  }
 
   const [historyStartDate] = useState(() => {
     const saved = safeReadJSON("goalTrackerStartDate", "");
@@ -319,6 +368,21 @@ safeSave("smartGoalStreakDate", today);
     return days;
   };
 
+  if (!authReady) {
+    return (
+      <main className="auth-page">
+        <section className="auth-card">
+          <h1>Goal Tracker Live</h1>
+          <p>आपका अकाउंट जाँचा जा रहा है...</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (!authSession) {
+    return <AuthPanel onLogin={handleAuthLogin} />;
+  }
+
   return (
     <div className="app">
       <header className="app-header">
@@ -326,6 +390,14 @@ safeSave("smartGoalStreakDate", today);
         <p>Track your goals. Build your future.</p>
       </header>
 
+      <nav className="screen-nav" aria-label="Main navigation">
+        <button type="button" className={activeTab === "dashboard" ? "screen-tab active" : "screen-tab"} onClick={() => setActiveTab("dashboard")}>🎯 Dashboard</button>
+        <button type="button" className={activeTab === "music" ? "screen-tab active" : "screen-tab"} onClick={() => setActiveTab("music")}>🎵 Music</button>
+        <button type="button" className={activeTab === "profile" ? "screen-tab active" : "screen-tab"} onClick={() => setActiveTab("profile")}>👤 Profile</button>
+      </nav>
+
+      {activeTab === "dashboard" && (
+        <>
       <section className="card progress-card">
         <h2>📊 Today's Progress</h2>
 
@@ -345,6 +417,7 @@ safeSave("smartGoalStreakDate", today);
         </div>
       </section>
 <StepCounter />
+      <ExerciseTimer />
 
       <section className="card">
         <h2>➕ {editingId ? "Edit Goal" : "Add Smart Goal"}</h2>
@@ -517,6 +590,26 @@ safeSave("smartGoalStreakDate", today);
           })}
         </div>
       </section>
+
+        </>
+      )}
+
+      {activeTab === "profile" && (
+        <section className="profile-screen">
+          <Profile />
+          <section className="card">
+            <h3>🔐 अकाउंट</h3>
+            <p>{authSession.user?.email}</p>
+            <button type="button" onClick={handleLogout}>Logout</button>
+          </section>
+        </section>
+      )}
+
+      {activeTab === "music" && (
+        <section className="music-screen">
+          <MusicZone />
+        </section>
+      )}
 
       <footer>
         <p>🎯 Small progress every day creates a better future.</p>

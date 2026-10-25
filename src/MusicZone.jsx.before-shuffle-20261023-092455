@@ -1,0 +1,234 @@
+import { useEffect, useRef, useState } from "react";
+import "./MusicZone.css";
+
+export default function MusicZone() {
+  const audio = useRef(null);
+  const urls = useRef([]);
+  const [tracks, setTracks] = useState([]);
+  const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [message, setMessage] = useState("");
+
+  const current = tracks[index];
+
+  useEffect(() => {
+    return () => {
+      urls.current.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
+
+  useEffect(() => {
+    const player = audio.current;
+    if (!player || !current) return;
+
+    setProgress(0);
+    setDuration(0);
+    player.load();
+
+    if (autoPlay) {
+      player.play()
+        .then(() => {
+          setPlaying(true);
+          setMessage("");
+        })
+        .catch(() => {
+          setPlaying(false);
+          setMessage("गाना नहीं चल पाया। Play बटन दबाकर फिर कोशिश करें।");
+        });
+      setAutoPlay(false);
+    }
+  }, [current?.url]);
+
+  function chooseFiles(event) {
+    const selected = Array.from(event.target.files || []);
+    const files = selected.filter(file =>
+      file.type.startsWith("audio/") ||
+      /\.(mp3|m4a|aac|wav|ogg|opus|flac|3gp|amr)$/i.test(file.name)
+    );
+
+    if (!files.length) {
+      if (selected.length) {
+        setMessage("चुनी गई फ़ाइल ऑडियो फ़ाइल नहीं लगती। MP3 या M4A चुनें।");
+      }
+      event.target.value = "";
+      return;
+    }
+
+    const added = files.map(file => {
+      const url = URL.createObjectURL(file);
+      urls.current.push(url);
+      return {
+        name: file.name.replace(/\.[^.]+$/, ""),
+        url
+      };
+    });
+
+    if (tracks.length === 0) {
+      setIndex(0);
+      setProgress(0);
+      setDuration(0);
+    }
+
+    setTracks(old => [...old, ...added]);
+    setPlaying(false);
+    setAutoPlay(false);
+    setMessage(`${added.length} गाना${added.length > 1 ? "े" : ""} जोड़ा गया। Play दबाएँ।`);
+    event.target.value = "";
+  }
+
+  async function togglePlay() {
+    const player = audio.current;
+    if (!player || !current) return;
+
+    if (!player.paused) {
+      player.pause();
+      setPlaying(false);
+      return;
+    }
+
+    try {
+      await player.play();
+      setPlaying(true);
+      setMessage("");
+    } catch {
+      setPlaying(false);
+      setMessage("गाना नहीं चल पाया। दूसरी ऑडियो फ़ाइल चुनकर देखें।");
+    }
+  }
+
+  function move(step) {
+    if (tracks.length < 2) return;
+    setIndex(old => (old + step + tracks.length) % tracks.length);
+    setProgress(0);
+    setDuration(0);
+    setAutoPlay(true);
+    setMessage("");
+  }
+
+  function selectTrack(i) {
+    if (i === index && audio.current) {
+      togglePlay();
+      return;
+    }
+    setIndex(i);
+    setProgress(0);
+    setDuration(0);
+    setAutoPlay(true);
+    setMessage("");
+  }
+
+  function time(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+    return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+  }
+
+  return (
+    <section className="music-card">
+      <div className="music-title">
+        <span>🎵</span>
+        <div>
+          <h2>Music Zone</h2>
+          <p>अपने फोन के गाने चुनें और सुनें</p>
+        </div>
+      </div>
+
+      <label className="music-pick">
+        <span>＋ गाने चुनें</span>
+        <input
+          type="file"
+          accept="audio/*,.mp3,.m4a,.aac,.wav,.ogg,.opus,.flac,.3gp,.amr"
+          multiple
+          onChange={chooseFiles}
+        />
+      </label>
+
+      <div className="music-art">♫</div>
+      <h3 className="music-track">
+        {current ? current.name : "अभी कोई गाना नहीं चुना"}
+      </h3>
+      <p className="music-subtitle">
+        {current ? `${index + 1} / ${tracks.length} गाने` : "फोन से ऑडियो फ़ाइल चुनें"}
+      </p>
+
+      <audio
+        ref={audio}
+        src={current?.url || undefined}
+        preload="metadata"
+        onTimeUpdate={e => setProgress(e.currentTarget.currentTime || 0)}
+        onLoadedMetadata={e => setDuration(e.currentTarget.duration || 0)}
+        onEnded={() => tracks.length > 1 ? move(1) : setPlaying(false)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onError={() => {
+          setPlaying(false);
+          setMessage("यह ऑडियो फ़ाइल नहीं चल सकी। दूसरी फ़ाइल चुनकर देखें।");
+        }}
+      />
+
+      <input
+        className="music-progress"
+        type="range"
+        min="0"
+        max={duration || 0}
+        step="1"
+        value={Math.min(progress, duration || 0)}
+        disabled={!current || !duration}
+        onChange={e => {
+          const value = Number(e.target.value);
+          if (audio.current) audio.current.currentTime = value;
+          setProgress(value);
+        }}
+        aria-label="Music progress"
+      />
+
+      <div className="music-time">
+        <span>{time(progress)}</span>
+        <span>{time(duration)}</span>
+      </div>
+
+      <div className="music-controls">
+        <button
+          disabled={tracks.length < 2}
+          onClick={() => move(-1)}
+          aria-label="Previous track"
+        >⏮</button>
+        <button
+          className="music-play"
+          disabled={!current}
+          onClick={togglePlay}
+        >
+          {playing ? "Ⅱ Pause" : "▶ Play"}
+        </button>
+        <button
+          disabled={tracks.length < 2}
+          onClick={() => move(1)}
+          aria-label="Next track"
+        >⏭</button>
+      </div>
+
+      {message && <p className="music-note" role="status">{message}</p>}
+
+      {tracks.length > 0 && (
+        <div className="music-list">
+          {tracks.map((track, i) => (
+            <button
+              className={i === index ? "selected" : ""}
+              key={track.url}
+              onClick={() => selectTrack(i)}
+            >
+              <span>{i === index && playing ? "♫ " : ""}{track.name}</span>
+              <span>{i === index && playing ? "Ⅱ" : "▶"}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <p className="music-note">
+        गाने इसी पेज पर चलेंगे। बैकग्राउंड प्लेबैक ब्राउज़र और डिवाइस की सीमाओं पर निर्भर है।
+      </p>
+    </section>
+  );
+}

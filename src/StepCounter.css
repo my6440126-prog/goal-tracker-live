@@ -154,3 +154,99 @@
     font-size: 12px;
   }
 }
+
+/* ===== PREMIUM PURPLE STEP COUNTER ===== */
+.step-card {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(96, 165, 250, 0.13), transparent 48%),
+    linear-gradient(145deg, #19172f, #10152a) !important;
+  border: 1px solid #393653;
+  border-radius: 22px;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.step-title-row h2 {
+  color: #f5f0ff;
+  letter-spacing: -0.3px;
+}
+
+.step-label {
+  color: #b9a7ff;
+}
+
+.step-status-badge {
+  background: rgba(167, 139, 250, 0.16);
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  color: #ddd6fe;
+}
+
+.step-total strong {
+  color: #f8f5ff;
+  text-shadow: 0 0 22px rgba(167, 139, 250, 0.12);
+}
+
+.step-total span,
+.step-percent,
+.step-message,
+.step-note {
+  color: #c0b9da;
+}
+
+.step-bar {
+  background: #292641;
+  border: 1px solid #393452;
+}
+
+.step-bar > div {
+  background: linear-gradient(90deg, #8b5cf6, #c026d3, #67e8f9);
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.25);
+}
+
+.step-stats > div {
+  background: rgba(167, 139, 250, 0.08);
+  border: 1px solid rgba(167, 139, 250, 0.13);
+  border-radius: 15px;
+}
+
+.step-stats strong {
+  color: #f5f0ff;
+}
+
+.step-stats span {
+  color: #bdb4d8;
+}
+
+.step-buttons button {
+  background: linear-gradient(120deg, #8b5cf6, #a855f7);
+  color: #fff;
+  border: 1px solid rgba(221, 214, 254, 0.15);
+  border-radius: 13px;
+}
+
+.step-buttons button:disabled {
+  background: #242238;
+  color: #89829f;
+  border-color: #39334f;
+}
+
+.step-error {
+  color: #fda4af;
+}
+
+@media (max-width: 380px) {
+  .step-card {
+    padding: 16px;
+    border-radius: 19px;
+  }
+
+  .step-stats {
+    gap: 8px;
+  }
+
+  .step-stats > div {
+    padding: 12px 9px;
+  }
+}
+/* ===== END PREMIUM PURPLE STEP COUNTER ===== */

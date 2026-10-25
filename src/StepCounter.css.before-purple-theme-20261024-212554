@@ -1,0 +1,156 @@
+
+.step-card {
+  padding: 20px;
+  margin-bottom: 16px;
+  border-radius: 22px;
+  color: #fff;
+  background: linear-gradient(145deg, #101d38, #243b70);
+  box-shadow: 0 10px 28px rgba(20, 40, 80, 0.18);
+}
+
+.step-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.step-title-row h2 {
+  color: #fff;
+  margin: 4px 0 0;
+  font-size: 20px;
+}
+
+.step-label {
+  color: #a9c4ff;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  margin: 0;
+  font-weight: 800;
+}
+
+.step-status-badge {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #ffffff20;
+  color: #dbeafe;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.step-total {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 22px 0 14px;
+}
+
+.step-total strong {
+  font-size: clamp(38px, 11vw, 54px);
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+
+.step-total span,
+.step-percent,
+.step-message,
+.step-note {
+  color: #c6d7ff;
+}
+
+.step-bar {
+  height: 11px;
+  border-radius: 20px;
+  background: #ffffff29;
+  overflow: hidden;
+}
+
+.step-bar > div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #38e7bb, #a3f77c);
+  transition: width 0.3s ease;
+}
+
+.step-percent {
+  font-size: 13px;
+  margin: 9px 0 16px;
+}
+
+.step-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.step-stats > div {
+  min-width: 0;
+  padding: 13px 10px;
+  border-radius: 13px;
+  background: #ffffff17;
+}
+
+.step-stats strong,
+.step-stats span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.step-stats strong {
+  font-size: 17px;
+}
+
+.step-stats span {
+  margin-top: 5px;
+  color: #c6d7ff;
+  font-size: 12px;
+}
+
+.step-message,
+.step-error {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 16px 0 10px;
+}
+
+.step-error {
+  color: #fecaca;
+}
+
+.step-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.step-buttons button {
+  min-width: 0;
+  padding: 12px 8px;
+  border-radius: 12px;
+  background: #fff;
+  color: #172b52;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.step-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.step-note {
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 15px 0 0;
+}
+
+@media (max-width: 360px) {
+  .step-card {
+    padding: 15px;
+  }
+
+  .step-buttons button {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,202 @@
+import { useState, useRef } from "react";
+import "./OnlineMusic.css";
+
+const API = "https://commons.wikimedia.org/w/api.php";
+
+export default function OnlineMusic() {
+  const [query, setQuery] = useState("relaxing instrumental music");
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [selectedTrack, setSelectedTrack] = useState(null);
+  const [playingTrack, setPlayingTrack] = useState(null);
+  const audioRef = useRef(null);
+
+  async function searchMusic(event) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.removeAttribute("src");
+      audioRef.current.load();
+    }
+
+    setTracks([]);
+    setSelectedTrack(null);
+    setPlayingTrack(null);
+
+    try {
+      const params = new URLSearchParams({
+        action: "query",
+        generator: "search",
+        gsrsearch: `${query} filemime:audio`,
+        gsrnamespace: "6",
+        gsrlimit: "20",
+        prop: "imageinfo",
+        iiprop: "url|extmetadata",
+        format: "json",
+        origin: "*",
+      });
+
+      const response = await fetch(`${API}?${params}`);
+      if (!response.ok) {
+        throw new Error("संगीत खोज अभी उपलब्ध नहीं है।");
+      }
+
+      const data = await response.json();
+      const pages = Object.values(data.query?.pages || {});
+
+      const results = pages
+        .filter((page) => {
+          const info = page.imageinfo?.[0];
+          const license = info?.extmetadata?.LicenseShortName?.value || "";
+          const url = info?.url || "";
+
+          return (
+            /\.(mp3|ogg|oga|wav|flac)(\?|$)/i.test(url) &&
+            /CC0|CC BY|CC BY-SA|Public domain/i.test(license)
+          );
+        })
+        .map((page) => ({
+          id: page.pageid,
+          title: page.title.replace(/^File:/, ""),
+          url: page.imageinfo[0].url,
+          license:
+            page.imageinfo[0].extmetadata?.LicenseShortName?.value ||
+            "लाइसेंस जाँचें",
+          pageUrl: `https://commons.wikimedia.org/wiki/${encodeURIComponent(
+            page.title.replace(/ /g, "_")
+          )}`,
+        }));
+
+      setTracks(results);
+
+      if (!results.length) {
+        setError("इस खोज में समर्थित मुफ्त ऑडियो नहीं मिला। दूसरा शब्द आज़माएँ।");
+      }
+    } catch {
+      setError(
+        "ऑनलाइन संगीत खोज नहीं हो सकी। इंटरनेट कनेक्शन जाँचें और फिर कोशिश करें।"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function chooseTrack(track) {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (selectedTrack === track.id) {
+      if (!audio.paused) {
+        audio.pause();
+        setPlayingTrack(null);
+      } else {
+        await togglePlay(track);
+      }
+      return;
+    }
+
+    audio.pause();
+    audio.src = track.url;
+    audio.load();
+
+    setSelectedTrack(track.id);
+    setPlayingTrack(null);
+    setError("");
+
+    try {
+      await audio.play();
+      setPlayingTrack(track.id);
+    } catch {
+      setPlayingTrack(null);
+      setError("गाना अपने-आप नहीं चला। चुने हुए गाने पर Play दबाकर कोशिश करें।");
+    }
+  }
+
+  async function togglePlay(track) {
+    const audio = audioRef.current;
+    if (!audio || selectedTrack !== track.id) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      setPlayingTrack(null);
+      return;
+    }
+
+    try {
+      await audio.play();
+      setPlayingTrack(track.id);
+      setError("");
+    } catch {
+      setPlayingTrack(null);
+      setError("गाना नहीं चल पाया। इंटरनेट कनेक्शन जाँचें और फिर Play दबाएँ।");
+    }
+  }
+
+  return (
+    <section className="online-music">
+      <h2>🌐 Free Online Music</h2>
+      <p>गाना चलाने के लिए उसके नाम पर टैप करें। चुने हुए गाने पर Play/Pause मिलेगा।</p>
+
+      <form className="online-search" onSubmit={searchMusic}>
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Music खोजें"
+          aria-label="संगीत खोजें"
+        />
+        <button type="submit" disabled={loading || !query.trim()}>
+          {loading ? "खोज रहे हैं..." : "खोजें"}
+        </button>
+      </form>
+
+      {error && <p className="online-message">{error}</p>}
+
+      <div className="online-track-list">
+        {tracks.map((track) => (
+          <article className="online-track" key={track.id}>
+            <button
+              type="button"
+              className="online-track-title"
+              onClick={() => chooseTrack(track)}
+              aria-expanded={selectedTrack === track.id}
+            >
+              {playingTrack === track.id ? "🎶" : "🎵"} {track.title}
+            </button>
+
+            {selectedTrack === track.id && (
+              <div className="online-track-controls">
+                <button type="button" onClick={() => togglePlay(track)}>
+                  {playingTrack === track.id ? "⏸ Pause" : "▶ Play"}
+                </button>
+
+                <p>लाइसेंस: {track.license}</p>
+                <a href={track.pageUrl} target="_blank" rel="noreferrer">
+                  स्रोत और लाइसेंस देखें
+                </a>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+
+      <audio
+        ref={audioRef}
+        preload="none"
+        style={{ display: "none" }}
+        onPlay={() => {
+          if (selectedTrack !== null) setPlayingTrack(selectedTrack);
+        }}
+        onPause={() => setPlayingTrack(null)}
+        onEnded={() => setPlayingTrack(null)}
+      />
+
+      <p className="online-note">
+        उपलब्धता, लाइसेंस और प्लेबैक संबंधित स्रोत पर निर्भर हैं।
+      </p>
+    </section>
+  );
+}

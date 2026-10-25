@@ -1,0 +1,129 @@
+import { useEffect, useRef, useState } from "react";
+import "./MusicZone.css";
+
+export default function MusicZone() {
+  const audio = useRef(null);
+  const urls = useRef([]);
+  const [tracks, setTracks] = useState([]);
+  const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const current = tracks[index];
+
+  useEffect(() => () => {
+    urls.current.forEach(url => URL.revokeObjectURL(url));
+  }, []);
+
+  function chooseFiles(event) {
+    const files = Array.from(event.target.files || []).filter(file =>
+      file.type.startsWith("audio/")
+    );
+    const added = files.map(file => {
+      const url = URL.createObjectURL(file);
+      urls.current.push(url);
+      return { name: file.name.replace(/\.[^.]+$/, ""), url };
+    });
+    setTracks(old => [...old, ...added]);
+    if (tracks.length === 0 && added.length) {
+      setIndex(0);
+      setPlaying(false);
+      setProgress(0);
+    }
+    event.target.value = "";
+  }
+
+  async function togglePlay() {
+    if (!audio.current || !current) return;
+    if (playing) {
+      audio.current.pause();
+      setPlaying(false);
+    } else {
+      try {
+        await audio.current.play();
+        setPlaying(true);
+      } catch {
+        setPlaying(false);
+      }
+    }
+  }
+
+  function move(step) {
+    if (!tracks.length) return;
+    setIndex(old => (old + step + tracks.length) % tracks.length);
+    setProgress(0);
+    setPlaying(true);
+  }
+
+  function time(seconds) {
+    if (!Number.isFinite(seconds)) return "0:00";
+    return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+  }
+
+  return (
+    <section className="music-card">
+      <div className="music-title">
+        <span>🎵</span>
+        <div>
+          <h2>Music Zone</h2>
+          <p>अपने फोन के गाने चलाएँ</p>
+        </div>
+      </div>
+
+      <label className="music-pick">
+        <span>＋ गाने चुनें</span>
+        <input type="file" accept="audio/*" multiple onChange={chooseFiles} />
+      </label>
+
+      <div className="music-art">♫</div>
+      <h3 className="music-track">{current ? current.name : "अभी कोई गाना नहीं चुना"}</h3>
+      <p className="music-subtitle">
+        {current ? `${index + 1} / ${tracks.length} गाने` : "फोन से ऑडियो फ़ाइल चुनें"}
+      </p>
+
+      <audio
+        ref={audio}
+        src={current?.url || ""}
+        onTimeUpdate={e => setProgress(e.currentTarget.currentTime || 0)}
+        onLoadedMetadata={e => setDuration(e.currentTarget.duration || 0)}
+        onEnded={() => tracks.length > 1 ? move(1) : setPlaying(false)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+      />
+
+      <input className="music-progress" type="range" min="0"
+        max={duration || 0} step="1" value={Math.min(progress, duration || 0)}
+        disabled={!current || !duration}
+        onChange={e => {
+          const value = Number(e.target.value);
+          if (audio.current) audio.current.currentTime = value;
+          setProgress(value);
+        }}
+        aria-label="Music progress" />
+
+      <div className="music-time"><span>{time(progress)}</span><span>{time(duration)}</span></div>
+
+      <div className="music-controls">
+        <button disabled={tracks.length < 2} onClick={() => move(-1)} aria-label="Previous track">⏮</button>
+        <button className="music-play" disabled={!current} onClick={togglePlay}>
+          {playing ? "Ⅱ Pause" : "▶ Play"}
+        </button>
+        <button disabled={tracks.length < 2} onClick={() => move(1)} aria-label="Next track">⏭</button>
+      </div>
+
+      {tracks.length > 0 && (
+        <div className="music-list">
+          {tracks.map((track, i) => (
+            <button className={i === index ? "selected" : ""} key={track.url}
+              onClick={() => { setIndex(i); setProgress(0); setPlaying(true); }}>
+              <span>{i === index && playing ? "♫ " : ""}{track.name}</span>
+              <span>▶</span>
+            </button>
+          ))}
+        </div>
+      )}
+      <p className="music-note">गाने इसी पेज के लिए चुने जाते हैं। दूसरे ऐप में अपने-आप संगीत चलना या बैकग्राउंड प्लेबैक डिवाइस और ऐप की स्थिति पर निर्भर है।</p>
+    </section>
+  );
+}
