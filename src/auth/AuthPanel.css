@@ -166,3 +166,22 @@
     font-size: 12px;
   }
 }
+
+.auth-text-button {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: #c4b5fd;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.auth-text-button:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
