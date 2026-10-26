@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
-import { App } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "../lib/supabase";
 import "./AuthPanel.css";
 
-export default function AuthPanel({ onLogin }) {
+export default function AuthPanel({
+  onLogin,
+  recoveryMode = false,
+  recoveryUrl = "",
+  onRecoveryComplete,
+}) {
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,6 +17,12 @@ export default function AuthPanel({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [recoverySession, setRecoverySession] = useState(false);
+
+  useEffect(() => {
+    if (recoveryMode) {
+      setMode("reset");
+    }
+  }, [recoveryMode]);
 
   function switchMode(nextMode) {
     setMode(nextMode);
@@ -111,6 +121,7 @@ export default function AuthPanel({ onLogin }) {
 
         if (data.session) {
           await onLogin(data.session.user);
+          onRecoveryComplete?.();
         } else {
           setMessage(
             "✅ आपका अकाउंट बन गया है। Gmail खोलें और Supabase का verification ईमेल देखें। ईमेल न मिले तो Spam फ़ोल्डर जाँचें। Confirm Email लिंक पर टैप करने के बाद इस ऐप में वापस आकर Login करें।"
@@ -134,7 +145,6 @@ export default function AuthPanel({ onLogin }) {
 
   useEffect(() => {
     let active = true;
-    let appUrlListener;
 
     const handleRecovery = (event, session) => {
       if (event === "PASSWORD_RECOVERY" && active) {
@@ -196,24 +206,10 @@ export default function AuthPanel({ onLogin }) {
       }
     }
 
-    async function setupAppListener() {
-      try {
-        appUrlListener = await App.addListener("appUrlOpen", ({ url }) => {
-          if (url?.startsWith("goaltracker://auth")) {
-            void processRecoveryUrl(url);
-          }
-        });
 
-        const launch = await App.getLaunchUrl();
-        if (launch?.url?.startsWith("goaltracker://auth")) {
-          void processRecoveryUrl(launch.url);
-        }
-      } catch (error) {
-        console.warn("App URL listener उपलब्ध नहीं है:", error);
-      }
+    if (recoveryUrl) {
+      void processRecoveryUrl(recoveryUrl);
     }
-
-    void setupAppListener();
 
     if (window.location.search.includes("reset-password=1")) {
       void (async () => {
@@ -232,9 +228,8 @@ export default function AuthPanel({ onLogin }) {
     return () => {
       active = false;
       data.subscription.unsubscribe();
-      if (appUrlListener) void appUrlListener.then((listener) => listener.remove());
     };
-  }, []);
+  }, [recoveryUrl]);
 
   return (
     <main className="auth-page">

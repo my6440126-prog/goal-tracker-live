@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { CapacitorPedometer } from "@capgo/capacitor-pedometer";
-import { CapacitorAccelerometer } from "@capgo/capacitor-accelerometer";
+import { useEffect, useState } from "react";
+import { registerPlugin } from "@capacitor/core";
 import "./StepCounter.css";
 
+const NativeStepCounter = registerPlugin("NativeStepCounter");
 const KEY = "stepCounterData";
 const DAILY_GOAL = 10000;
 
@@ -11,7 +11,7 @@ function getDateKey() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-function readToday() {
+function readLegacyToday() {
   try {
     const all = JSON.parse(localStorage.getItem(KEY) || "{}");
     const value = all[getDateKey()]?.steps;
@@ -21,187 +21,88 @@ function readToday() {
   }
 }
 
-function saveToday(steps) {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(KEY) || "{}");
-    const all =
-      parsed && typeof parsed === "object" && !Array.isArray(parsed)
-        ? parsed
-        : {};
-
-    all[getDateKey()] = { steps: Math.max(0, Math.floor(steps)) };
-    localStorage.setItem(KEY, JSON.stringify(all));
-  } catch {
-    console.warn("Step data could not be saved.");
-  }
-}
-
 export default function StepCounter() {
-  const [steps, setSteps] = useState(readToday);
+  const [steps, setSteps] = useState(readLegacyToday);
   const [mode, setMode] = useState("starting");
-  const [status, setStatus] = useState("फोन का सेंसर शुरू हो रहा है…");
+  const [status, setStatus] = useState("फोन का असली Step Sensor शुरू हो रहा है…");
   const [error, setError] = useState("");
-
-  const active = useRef(false);
-  const listener = useRef(null);
-  const lastMotion = useRef(null);
-  const lastStepAt = useRef(0);
-  const estimatedSteps = useRef(readToday());
-
-  const updateSteps = (value) => {
-    const safe = Math.max(0, Math.floor(value));
-    setSteps(safe);
-    saveToday(safe);
-  };
-
-  const clearSensors = async () => {
-    active.current = false;
-
-    if (listener.current) {
-      try {
-        await listener.current.remove();
-      } catch {}
-      listener.current = null;
-    }
-
-    try {
-      await CapacitorPedometer.stopMeasurementUpdates();
-    } catch {}
-
-    try {
-      await CapacitorAccelerometer.stopMeasurementUpdates();
-    } catch {}
-  };
-
-  const startPedometer = async () => {
-    const available = await CapacitorPedometer.isAvailable();
-
-    if (!available?.stepCounting) {
-      throw new Error("असली Step Sensor उपलब्ध नहीं है।");
-    }
-
-    const permission = await CapacitorPedometer.requestPermissions();
-
-    if (permission?.activityRecognition !== "granted") {
-      throw new Error("Activity Recognition अनुमति नहीं मिली।");
-    }
-
-    const midnight = new Date();
-    midnight.setHours(0, 0, 0, 0);
-
-    const refresh = async () => {
-      const result = await CapacitorPedometer.getMeasurement({
-        start: midnight.getTime(),
-        end: Date.now(),
-      });
-
-      if (active.current && Number.isFinite(result?.numberOfSteps)) {
-        updateSteps(result.numberOfSteps);
-      }
-    };
-
-    listener.current = await CapacitorPedometer.addListener(
-      "measurement",
-      () => refresh().catch(() => {})
-    );
-
-    active.current = true;
-
-    try {
-      await CapacitorPedometer.startMeasurementUpdates();
-      await refresh();
-      setMode("sensor");
-      setStatus("फोन का Step Sensor सक्रिय है।");
-      setError("");
-    } catch (e) {
-      await clearSensors();
-      throw e;
-    }
-  };
-
-  const startAccelerometer = async () => {
-    const available = await CapacitorAccelerometer.isAvailable();
-
-    if (!available?.isAvailable) {
-      throw new Error("Accelerometer उपलब्ध नहीं है।");
-    }
-
-    const permission = await CapacitorAccelerometer.requestPermissions();
-
-    if (permission?.accelerometer !== "granted") {
-      throw new Error("Motion sensor अनुमति नहीं मिली।");
-    }
-
-    lastMotion.current = null;
-    lastStepAt.current = 0;
-    estimatedSteps.current = readToday();
-
-    listener.current = await CapacitorAccelerometer.addListener(
-      "measurement",
-      ({ x, y, z }) => {
-        if (!active.current) return;
-
-        const magnitude = Math.sqrt(x * x + y * y + z * z);
-        const previous = lastMotion.current;
-        lastMotion.current = magnitude;
-
-        if (
-          previous !== null &&
-          Math.abs(magnitude - previous) > 0.16 &&
-          Date.now() - lastStepAt.current > 350
-        ) {
-          lastStepAt.current = Date.now();
-          estimatedSteps.current += 1;
-          updateSteps(estimatedSteps.current);
-        }
-      }
-    );
-
-    active.current = true;
-
-    try {
-      await CapacitorAccelerometer.startMeasurementUpdates();
-      setMode("motion");
-      setStatus("Motion fallback सक्रिय है। कदम अनुमानित हैं।");
-      setError("");
-    } catch (e) {
-      await clearSensors();
-      throw e;
-    }
-  };
 
   useEffect(() => {
     let cancelled = false;
+    let timer = null;
 
-    const startAutomatically = async () => {
-      setMode("starting");
-      setStatus("ऑटोमैटिक सेंसर चुना जा रहा है…");
-      setError("");
-
+    const sync = async () => {
       try {
-        await startPedometer();
-      } catch (sensorError) {
+        const result = await NativeStepCounter.getStatus();
         if (cancelled) return;
-        await clearSensors();
-        setMode("error");
-        setStatus("असली Step Sensor उपलब्ध नहीं है। गलत गिनती से बचने के लिए Motion Mode बंद है।");
-        setError(sensorError?.message || "Pedometer शुरू नहीं हो सका। Android ऐप में सेंसर और Activity Recognition permission जाँचें।");
+
+        const safe = Math.max(0, Math.floor(Number(result?.steps) || 0));
+        setSteps(safe);
+
+        try {
+          const all = JSON.parse(localStorage.getItem(KEY) || "{}");
+          const data = all && typeof all === "object" && !Array.isArray(all)
+            ? all
+            : {};
+          data[getDateKey()] = { steps: safe };
+          localStorage.setItem(KEY, JSON.stringify(data));
+        } catch {
+          // Native SharedPreferences remain the primary step record.
+        }
+      } catch {
+        // The next poll can recover if the native bridge is temporarily unavailable.
       }
     };
 
-    startAutomatically();
+    const start = async () => {
+      try {
+        const available = await NativeStepCounter.isAvailable();
+
+        if (!available?.available) {
+          throw new Error("इस फोन में असली TYPE_STEP_COUNTER सेंसर उपलब्ध नहीं है।");
+        }
+
+        const permission = await NativeStepCounter.requestActivityPermission();
+
+        if (!permission?.granted) {
+          throw new Error("कदम गिनने के लिए Activity Recognition अनुमति आवश्यक है।");
+        }
+
+        await NativeStepCounter.initializeToday({
+          steps: readLegacyToday(),
+        });
+
+        await NativeStepCounter.startTracking();
+        await sync();
+
+        if (cancelled) return;
+
+        setMode("sensor");
+        setStatus("फोन का असली Step Sensor सक्रिय है। दैनिक गिनती सुरक्षित की जा रही है।");
+        setError("");
+
+        timer = window.setInterval(sync, 3000);
+        document.addEventListener("visibilitychange", sync);
+      } catch (e) {
+        if (cancelled) return;
+
+        setMode("error");
+        setStatus("असली Step Sensor चालू नहीं हो सका।");
+        setError(
+          e?.message ||
+          "Android ऐप में सेंसर और Activity Recognition अनुमति जाँचें।"
+        );
+      }
+    };
+
+    start();
 
     return () => {
       cancelled = true;
-      active.current = false;
+      if (timer !== null) window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", sync);
 
-      if (listener.current) {
-        listener.current.remove().catch(() => {});
-        listener.current = null;
-      }
-
-      CapacitorPedometer.stopMeasurementUpdates().catch(() => {});
-      CapacitorAccelerometer.stopMeasurementUpdates().catch(() => {});
+      // Intentionally do not stop the native service on component unmount.
     };
   }, []);
 
@@ -209,14 +110,11 @@ export default function StepCounter() {
   const distance = (steps * 0.75) / 1000;
   const calories = Math.round(steps * 0.04);
 
-  const badge =
-    mode === "sensor"
-      ? "SENSOR ACTIVE"
-      : mode === "motion"
-        ? "MOTION MODE"
-        : mode === "error"
-          ? "UNAVAILABLE"
-          : "STARTING";
+  const badge = mode === "sensor"
+    ? "SENSOR ACTIVE"
+    : mode === "error"
+      ? "UNAVAILABLE"
+      : "STARTING";
 
   return (
     <section className="step-card">
@@ -263,10 +161,8 @@ export default function StepCounter() {
       {error && <p className="step-error">{error}</p>}
 
       <p className="step-note">
-        सेंसर अपने-आप चुना जाता है। दूरी और कैलोरी अनुमान हैं।
-        Motion mode में कदमों की सटीकता की गारंटी नहीं है।
-        बैकग्राउंड ट्रैकिंग Android की अनुमति, डिवाइस और बैटरी
-        सेटिंग पर निर्भर करती है।
+        कदम फोन के असली हार्डवेयर सेंसर से लिए जाते हैं। दूरी और कैलोरी अनुमान हैं।
+        बैकग्राउंड गिनती Android की अनुमति, बैटरी सेटिंग और डिवाइस पर निर्भर करती है।
       </p>
     </section>
   );

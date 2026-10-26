@@ -3,6 +3,7 @@ import MusicZone from "./MusicZone";
 import Profile from "./Profile";
 import StepCounter from "./StepCounter";
 import AuthPanel from "./auth/AuthPanel";
+import { App as CapacitorApp } from "@capacitor/app";
 import { supabase } from "./lib/supabase";
 import { useEffect, useState } from "react";
 import "./App.css";
@@ -65,6 +66,53 @@ const [goals, setGoals] = useState(() => {
 
   const [authSession, setAuthSession] = useState(null);
   const [authReady, setAuthReady] = useState(false);
+  const [recoveryActive, setRecoveryActive] = useState(false);
+  const [recoveryUrl, setRecoveryUrl] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    let listenerPromise;
+
+    const handleUrl = (url) => {
+      if (active && url?.startsWith("goaltracker://auth")) {
+        setRecoveryUrl(url);
+        setRecoveryActive(true);
+      }
+    };
+
+    async function setup() {
+      try {
+        listenerPromise = CapacitorApp.addListener("appUrlOpen", ({ url }) => {
+          handleUrl(url);
+        });
+        const listener = await listenerPromise;
+        if (!active) {
+          void listener.remove();
+        }
+
+        const launch = await CapacitorApp.getLaunchUrl();
+        handleUrl(launch?.url);
+      } catch (error) {
+        console.warn("Recovery link listener:", error);
+      }
+    }
+
+    if (
+      window.location.search.includes("reset-password=1") ||
+      window.location.hash.includes("type=recovery")
+    ) {
+      setRecoveryActive(true);
+    }
+
+    void setup();
+
+    return () => {
+      active = false;
+      if (listenerPromise) {
+        void listenerPromise.then((listener) => listener.remove()).catch(() => {});
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -77,8 +125,11 @@ const [goals, setGoals] = useState(() => {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         if (mounted) {
+          if (event === "PASSWORD_RECOVERY") {
+            setRecoveryActive(true);
+          }
           setAuthSession(session ?? null);
           setAuthReady(true);
         }
@@ -379,8 +430,15 @@ safeSave("smartGoalStreakDate", today);
     );
   }
 
-  if (!authSession) {
-    return <AuthPanel onLogin={handleAuthLogin} />;
+  if (recoveryActive || !authSession) {
+    return (
+      <AuthPanel
+        onLogin={handleAuthLogin}
+        recoveryMode={recoveryActive}
+        recoveryUrl={recoveryUrl}
+        onRecoveryComplete={() => setRecoveryActive(false)}
+      />
+    );
   }
 
   return (
