@@ -250,3 +250,32 @@
   }
 }
 /* ===== END PREMIUM PURPLE STEP COUNTER ===== */
+
+/* ===== STEP SENSOR REFRESH UI ===== */
+.step-sync-time,
+.step-refresh-message {
+  color: #c9bdf0;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.step-refresh-message {
+  color: #a7f3d0;
+}
+
+.step-buttons {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.step-buttons button {
+  min-height: 44px;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.step-buttons button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+/* ===== END STEP SENSOR REFRESH UI ===== */

@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
@@ -92,12 +94,20 @@ public class NativeStepCounterPlugin extends Plugin {
         android.content.SharedPreferences prefs =
             getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
-        if (!today().equals(prefs.getString("date", ""))) {
+        String currentDate = today();
+        String savedDate = prefs.getString("date", "");
+
+        if (!currentDate.equals(savedDate)) {
             prefs.edit()
-                .putString("date", today())
+                .putString("date", currentDate)
                 .putInt("steps", steps)
                 .remove("has_raw")
                 .apply();
+        } else {
+            int existing = Math.max(0, prefs.getInt("steps", 0));
+            if (steps > existing) {
+                prefs.edit().putInt("steps", steps).apply();
+            }
         }
 
         call.resolve();
@@ -132,6 +142,49 @@ public class NativeStepCounterPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void refreshSensor(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            getPermissionState("activityRecognition") != PermissionState.GRANTED) {
+            call.reject("Activity Recognition permission is required.");
+            return;
+        }
+
+        if (!sensorAvailable()) {
+            call.reject("This phone does not provide TYPE_STEP_COUNTER.");
+            return;
+        }
+
+        try {
+            Intent intent = new Intent(getContext(), StepCounterService.class);
+            intent.setAction(StepCounterService.ACTION_REFRESH);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContext().startForegroundService(intent);
+            } else {
+                getContext().startService(intent);
+            }
+
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                android.content.SharedPreferences prefs =
+                    getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+
+                int steps = today().equals(prefs.getString("date", ""))
+                    ? prefs.getInt("steps", 0)
+                    : 0;
+
+                JSObject result = new JSObject();
+                result.put("steps", steps);
+                result.put("available", sensorAvailable());
+                result.put("tracking", prefs.getBoolean("tracking", false));
+                result.put("lastUpdated", prefs.getLong("last_updated", 0L));
+                call.resolve(result);
+            }, 1200);
+        } catch (Exception e) {
+            call.reject("Could not refresh the Android step sensor.", e);
+        }
+    }
+
+    @PluginMethod
     public void getStatus(PluginCall call) {
         android.content.SharedPreferences prefs =
             getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -144,6 +197,7 @@ public class NativeStepCounterPlugin extends Plugin {
         result.put("steps", steps);
         result.put("available", sensorAvailable());
         result.put("tracking", prefs.getBoolean("tracking", false));
+        result.put("lastUpdated", prefs.getLong("last_updated", 0L));
         call.resolve(result);
     }
 }

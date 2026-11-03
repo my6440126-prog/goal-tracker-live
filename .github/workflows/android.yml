@@ -49,6 +49,12 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Compile Android Java without signing
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew :app:compileDebugJavaWithJavac
+
       - name: Decode release keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}

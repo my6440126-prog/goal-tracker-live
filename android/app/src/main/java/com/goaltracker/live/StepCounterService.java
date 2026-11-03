@@ -22,6 +22,7 @@ public class StepCounterService extends Service implements SensorEventListener {
     private static final String PREFS = "native_step_counter";
     private static final String CHANNEL = "goal_tracker_steps";
     private static final int NOTIFICATION_ID = 7312;
+    static final String ACTION_REFRESH = "com.goaltracker.live.REFRESH_STEPS";
 
     private SensorManager sensorManager;
     private Sensor stepSensor;
@@ -100,6 +101,14 @@ public class StepCounterService extends Service implements SensorEventListener {
             return START_NOT_STICKY;
         }
 
+        boolean refresh = intent != null &&
+            ACTION_REFRESH.equals(intent.getAction());
+
+        if (refresh && registered) {
+            sensorManager.unregisterListener(this);
+            registered = false;
+        }
+
         if (!registered) {
             registered = sensorManager.registerListener(
                 this,
@@ -162,6 +171,7 @@ public class StepCounterService extends Service implements SensorEventListener {
             .putInt("steps", Math.max(0, steps))
             .putLong("last_raw", lastRaw)
             .putBoolean("has_raw", hasRaw)
+            .putLong("last_updated", System.currentTimeMillis())
             .apply();
     }
 
