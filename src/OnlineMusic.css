@@ -123,3 +123,176 @@
 @media (prefers-reduced-motion: reduce) {
   .online-track, .online-search button, .online-track button { transition: none; }
 }
+
+/* ===== PREMIUM ONLINE MUSIC UPDATE ===== */
+.online-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 8px;
+}
+
+.online-heading-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: 1px solid #a78bfa45;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #7c3aed35, #ec489920);
+  font-size: 24px;
+}
+
+.online-heading h2 {
+  margin: 0 0 5px;
+}
+
+.online-heading p {
+  margin: 0;
+}
+
+.online-track {
+  display: grid;
+  gap: 9px;
+}
+
+.online-track .online-track-name {
+  margin: 0;
+  color: #f3e8ff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.online-track .online-artist {
+  margin: 0;
+  color: #b8c3da;
+}
+
+.online-artist strong {
+  color: #ded4f7;
+}
+
+.online-license {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 9px 10px;
+  border: 1px solid #a78bfa25;
+  border-radius: 11px;
+  background: #090e1b80;
+  font-size: 12px;
+}
+
+.online-license span {
+  color: #aebbd3;
+}
+
+.online-license strong {
+  color: #c4b5fd;
+  overflow-wrap: anywhere;
+}
+
+.online-track a {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 2px;
+}
+
+.online-legal-note {
+  margin: 16px 0 0;
+  padding: 11px 12px;
+  border-left: 3px solid #8b5cf6;
+  border-radius: 0 10px 10px 0;
+  background: #8b5cf610;
+  color: #aebbd3;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.online-track button,
+.online-search button {
+  min-height: 43px;
+  touch-action: manipulation;
+}
+
+.online-track button:focus-visible,
+.online-search button:focus-visible,
+.online-search input:focus-visible,
+.online-track a:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .online-track,
+  .online-search button,
+  .online-track button {
+    transition: none !important;
+  }
+}
+/* ===== END PREMIUM ONLINE MUSIC UPDATE ===== */
+
+
+/* ===== LANGUAGE AND GENRE MUSIC PRESETS ===== */
+.online-preset-group {
+  margin: 17px 0;
+}
+
+.online-preset-title {
+  margin: 0 0 10px;
+  color: #e7e9ed;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.online-preset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.online-music .online-preset {
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid #354239;
+  border-radius: 22px;
+  background: #211b35;
+  color: #dce8df;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease;
+}
+
+.online-music .online-preset.active {
+  background: #38245a;
+  color: #a78bfa;
+  border-color: #a78bfa;
+}
+
+.online-music .online-preset:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 3px;
+}
+
+@media (max-width: 380px) {
+  .online-preset-list {
+    gap: 6px;
+  }
+
+  .online-music .online-preset {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .online-music .online-preset {
+    transition: none;
+  }
+}
+/* ===== END LANGUAGE AND GENRE MUSIC PRESETS ===== */
