@@ -88,28 +88,55 @@ public class NativeStepCounterPlugin extends Plugin {
 
     @PluginMethod
     public void initializeToday(PluginCall call) {
-        Integer requested = call.getInt("steps");
-        int steps = requested == null ? 0 : Math.max(0, requested);
-
         android.content.SharedPreferences prefs =
             getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
 
         String currentDate = today();
         String savedDate = prefs.getString("date", "");
+        int existingSteps = Math.max(0, prefs.getInt("steps", 0));
+        int legacySteps = Math.max(0, call.getInt("steps", 0));
+        String migrationKey = "legacy_imported_" + currentDate;
 
-        if (!currentDate.equals(savedDate)) {
-            prefs.edit()
-                .putString("date", currentDate)
-                .putInt("steps", steps)
-                .remove("has_raw")
-                .apply();
-        } else {
-            int existing = Math.max(0, prefs.getInt("steps", 0));
-            if (steps > existing) {
-                prefs.edit().putInt("steps", steps).apply();
-            }
+        android.content.SharedPreferences.Editor editor = prefs.edit();
+
+        if (!savedDate.isEmpty() && !currentDate.equals(savedDate)) {
+            String oldKey = "history_" + savedDate;
+            editor.putInt(oldKey, Math.max(
+                prefs.getInt(oldKey, 0),
+                existingSteps
+            ));
         }
 
+        if (!currentDate.equals(savedDate)) {
+            int restoredToday = Math.max(
+                0,
+                prefs.getInt("history_" + currentDate, 0)
+            );
+
+            editor.putString("date", currentDate)
+                .putInt("steps", restoredToday)
+                .remove("has_raw")
+                .remove("last_raw")
+                .putLong("last_updated", 0L);
+        }
+
+        if (!prefs.getBoolean(migrationKey, false)) {
+            long lastUpdated = currentDate.equals(savedDate)
+                ? prefs.getLong("last_updated", 0L)
+                : 0L;
+
+            int nativeSteps = currentDate.equals(savedDate)
+                ? existingSteps
+                : Math.max(0, prefs.getInt("history_" + currentDate, 0));
+
+            if (lastUpdated == 0L) {
+                editor.putInt("steps", Math.max(nativeSteps, legacySteps));
+            }
+
+            editor.putBoolean(migrationKey, true);
+        }
+
+        editor.apply();
         call.resolve();
     }
 
@@ -200,4 +227,39 @@ public class NativeStepCounterPlugin extends Plugin {
         result.put("lastUpdated", prefs.getLong("last_updated", 0L));
         call.resolve(result);
     }
+
+    @PluginMethod
+    public void getHistory(PluginCall call) {
+        android.content.SharedPreferences prefs =
+            getContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+
+        JSObject history = new JSObject();
+
+        for (java.util.Map.Entry<String, ?> entry : prefs.getAll().entrySet()) {
+            String key = entry.getKey();
+
+            if (key != null && key.startsWith("history_")) {
+                String date = key.substring("history_".length());
+                Object value = entry.getValue();
+
+                if (value instanceof Integer) {
+                    history.put(date, Math.max(0, (Integer) value));
+                }
+            }
+        }
+
+        String currentDate = prefs.getString("date", "");
+        if (!currentDate.isEmpty()) {
+            history.put(
+                currentDate,
+                Math.max(0, prefs.getInt("steps", 0))
+            );
+        }
+
+        JSObject result = new JSObject();
+        result.put("history", history);
+        result.put("lastUpdated", prefs.getLong("last_updated", 0L));
+        call.resolve(result);
+    }
+
 }

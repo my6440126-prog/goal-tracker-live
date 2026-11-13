@@ -97,18 +97,13 @@ public class StepCounterService extends Service implements SensorEventListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (stepSensor == null || sensorManager == null) {
+            getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit().putBoolean("tracking", false).apply();
             stopSelf();
             return START_NOT_STICKY;
         }
 
-        boolean refresh = intent != null &&
-            ACTION_REFRESH.equals(intent.getAction());
-
-        if (refresh && registered) {
-            sensorManager.unregisterListener(this);
-            registered = false;
-        }
-
+        // Refresh does not unregister the sensor. Keep the existing listener active.
         if (!registered) {
             registered = sensorManager.registerListener(
                 this,
@@ -118,6 +113,8 @@ public class StepCounterService extends Service implements SensorEventListener {
         }
 
         if (!registered) {
+            getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit().putBoolean("tracking", false).apply();
             stopSelf();
             return START_NOT_STICKY;
         }
@@ -126,6 +123,21 @@ public class StepCounterService extends Service implements SensorEventListener {
             .edit().putBoolean("tracking", true).apply();
 
         return START_STICKY;
+    }
+
+    private void archiveDay(
+        android.content.SharedPreferences prefs,
+        String date,
+        int steps
+    ) {
+        if (date == null || date.isEmpty()) return;
+
+        String key = "history_" + date;
+        int previous = Math.max(0, prefs.getInt(key, 0));
+
+        prefs.edit()
+            .putInt(key, Math.max(previous, Math.max(0, steps)))
+            .apply();
     }
 
     @Override
@@ -144,15 +156,18 @@ public class StepCounterService extends Service implements SensorEventListener {
         String savedDate = prefs.getString("date", "");
         boolean hasRaw = prefs.getBoolean("has_raw", false);
         long lastRaw = prefs.getLong("last_raw", -1L);
-        int steps = prefs.getInt("steps", 0);
+        int steps = Math.max(0, prefs.getInt("steps", 0));
 
         if (!date.equals(savedDate)) {
-            // Do not assign yesterday's sensor delta to today's total.
-            steps = 0;
+            // Archive yesterday before starting today's sensor baseline.
+            archiveDay(prefs, savedDate, steps);
+
+            // Restore any already-saved total for today; never import old UI data.
+            steps = Math.max(0, prefs.getInt("history_" + date, 0));
             lastRaw = raw;
             hasRaw = true;
         } else if (!hasRaw || lastRaw < 0) {
-            // Establish the first baseline; never invent earlier steps.
+            // First event establishes a baseline; it does not invent past steps.
             lastRaw = raw;
             hasRaw = true;
         } else if (raw >= lastRaw) {
@@ -161,18 +176,22 @@ public class StepCounterService extends Service implements SensorEventListener {
             steps = (int) Math.min(Integer.MAX_VALUE, updated);
             lastRaw = raw;
         } else {
-            // Sensor total decreased, usually after a device reboot.
-            // Keep the saved daily total and establish a new baseline.
+            // Sensor total decreased, usually after reboot. Preserve today's total.
             lastRaw = raw;
         }
 
-        prefs.edit()
+        android.content.SharedPreferences.Editor editor = prefs.edit()
             .putString("date", date)
             .putInt("steps", Math.max(0, steps))
             .putLong("last_raw", lastRaw)
             .putBoolean("has_raw", hasRaw)
-            .putLong("last_updated", System.currentTimeMillis())
-            .apply();
+            .putLong("last_updated", System.currentTimeMillis());
+
+        // Persist today's total on every sensor event.
+        String historyKey = "history_" + date;
+        int archivedToday = Math.max(0, prefs.getInt(historyKey, 0));
+        editor.putInt(historyKey, Math.max(archivedToday, steps));
+        editor.apply();
     }
 
     @Override
