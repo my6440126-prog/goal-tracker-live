@@ -500,3 +500,36 @@
   }
 }
 /* ===== END STEP COUNTER HISTORY ===== */
+
+
+/* ===== TEMPORARY SENSOR DEBUG PANEL ===== */
+.step-native-debug {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid rgba(170, 145, 255, 0.35);
+  border-radius: 12px;
+  background: rgba(25, 20, 48, 0.72);
+  color: #eee8ff;
+  font-size: 12px;
+}
+
+.step-native-debug > strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #c9b7ff;
+  font-size: 13px;
+}
+
+.step-native-debug > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.step-native-debug b {
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+/* ===== END TEMPORARY SENSOR DEBUG PANEL ===== */

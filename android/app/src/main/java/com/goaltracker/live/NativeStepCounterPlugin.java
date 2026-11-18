@@ -221,10 +221,19 @@ public class NativeStepCounterPlugin extends Plugin {
             : 0;
 
         JSObject result = new JSObject();
+        String currentDate = today();
+
         result.put("steps", steps);
         result.put("available", sensorAvailable());
         result.put("tracking", prefs.getBoolean("tracking", false));
         result.put("lastUpdated", prefs.getLong("last_updated", 0L));
+        result.put("date", currentDate);
+        result.put("rawCount", prefs.getLong("last_raw", -1L));
+        result.put("hasRaw", prefs.getBoolean("has_raw", false));
+        result.put("legacyImported",
+            prefs.getBoolean("legacy_imported_" + currentDate, false));
+        result.put("archivedToday",
+            prefs.getInt("history_" + currentDate, 0));
         call.resolve(result);
     }
 

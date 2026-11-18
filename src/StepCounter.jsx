@@ -129,6 +129,15 @@ async function syncNativeHistory() {
     history,
     steps: safeSteps(history[today]?.steps),
     lastUpdated: updatedAt,
+    nativeDebug: {
+      nativeSteps: safeSteps(status?.steps),
+      date: status?.date ?? "unavailable",
+      rawCount: status?.rawCount ?? -1,
+      hasRaw: Boolean(status?.hasRaw),
+      tracking: Boolean(status?.tracking),
+      legacyImported: Boolean(status?.legacyImported),
+      archivedToday: safeSteps(status?.archivedToday),
+    },
   };
 }
 
@@ -187,6 +196,7 @@ export default function StepCounter({ lang = "hi" }) {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshMessage, setRefreshMessage] = useState("");
   const [lastUpdated, setLastUpdated] = useState(0);
+  const [nativeDebug, setNativeDebug] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -200,6 +210,7 @@ export default function StepCounter({ lang = "hi" }) {
         setHistory(result.history);
         setSteps(result.steps);
         setLastUpdated(result.lastUpdated);
+        setNativeDebug(result.nativeDebug);
       } catch {
         // The next poll can recover if the native bridge is unavailable.
       }
@@ -298,6 +309,7 @@ export default function StepCounter({ lang = "hi" }) {
       setHistory(synced.history);
       setSteps(synced.steps);
       setLastUpdated(synced.lastUpdated);
+      setNativeDebug(synced.nativeDebug);
       setMode("sensor");
       setStatus("active");
       setError("");
@@ -453,6 +465,19 @@ export default function StepCounter({ lang = "hi" }) {
             : tr("Refresh / Reconnect", "रीफ्रेश / दोबारा कनेक्ट")}
         </button>
       </div>
+
+      {nativeDebug && (
+        <section className="step-native-debug">
+          <strong>{tr("Temporary sensor diagnostics", "अस्थायी सेंसर जाँच")}</strong>
+          <div><span>Native steps</span><b>{nativeDebug.nativeSteps}</b></div>
+          <div><span>Raw sensor count</span><b>{nativeDebug.rawCount}</b></div>
+          <div><span>Raw baseline available</span><b>{String(nativeDebug.hasRaw)}</b></div>
+          <div><span>Tracking</span><b>{String(nativeDebug.tracking)}</b></div>
+          <div><span>Native date</span><b>{nativeDebug.date}</b></div>
+          <div><span>Legacy imported today</span><b>{String(nativeDebug.legacyImported)}</b></div>
+          <div><span>Archived today</span><b>{nativeDebug.archivedToday}</b></div>
+        </section>
+      )}
 
       {lastUpdated > 0 && (
         <p className="step-sync-time">
